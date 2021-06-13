@@ -32,20 +32,25 @@ I have just started with this project, please create a Github issue if you encou
        (for example `data-uc-id="BJz7qNsdj-7"` for Youtube)
 1. Download and add the files from the `/dist/` folder to your website
     1. `ucw.min.css` into the `<head>` section: 
-       ```
+       ```html
        <head>
          <link type="text/css" rel="stylesheet" href="ucw.min.css"/>
        </head>
        ```
     1. `ucw.js` (or if you need IE11 support `ucw.legacy.js`) at the end of your `<body>`
-       ```
+       ```html
          <script src="ucw.js"></script>
        </body>
        </html>
        ```
        
 Instead of downloading the files you can also use the *jsdelivr CDN*, however it's recommended
-to host the files on your server to avoid third party requests. 
+to host the files on your server to avoid third party requests.
+
+```
+https://cdn.jsdelivr.net/gh/philsch/usercentrics-widgets@main/dist/ucw.js
+https://cdn.jsdelivr.net/gh/philsch/usercentrics-widgets@main/dist/ucw.min.css
+```
 
 Refer to the [/example/](./example) directory for complete examples.
 

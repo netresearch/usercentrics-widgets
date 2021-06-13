@@ -80,11 +80,9 @@ class WidgetStore {
       if (e.detail && (e.detail.previousView === 'NONE' || e.detail.previousView === 'PRIVACY_BUTTON')) {
         return;
       }
-      cmp.waitForCmpConsent('BJz7qNsdj-7', () => {
-        for (const ucId of Object.keys(this.store)) {
-          cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
-        }
-      });
+      for (const ucId of Object.keys(this.store)) {
+        cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
+      }
     });
   }
 }
