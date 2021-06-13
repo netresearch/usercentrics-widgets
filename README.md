@@ -2,7 +2,7 @@ Usercentrics Widgets
 =====================
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/philsch/usercentrics-widgets?style=flat-square)
-[![Build Status](https://travis-ci.com/philsch/usercentrics-widgets.svg?branch=master)](https://travis-ci.com/philsch/usercentrics-widgets)
+[![Build Status](https://travis-ci.com/philsch/usercentrics-widgets.svg?branch=main)](https://travis-ci.com/philsch/usercentrics-widgets)
 [![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square)](https://github.com/standard/semistandard)
 ![size ucw.js](https://img.shields.io/github/size/philsch/usercentrics-widgets/dist/ucw.js?style=flat-square&label=/dist/ucw.js)
 ![size ucw.legacy.js](https://img.shields.io/github/size/philsch/usercentrics-widgets/dist/ucw.legacy.js?style=flat-square&label=/dist/ucw.legacy.js)
