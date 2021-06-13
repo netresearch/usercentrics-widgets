@@ -1,6 +1,6 @@
 {
   "name": "usercentrics-widgets",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Lightweight placeholders compatible with Usercentrics CMP",
   "main": "index.js",
   "scripts": {
