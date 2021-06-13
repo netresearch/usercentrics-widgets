@@ -13,7 +13,7 @@ class WidgetFactory {
       const host = url.host;
       const nodeType = el.tagName.toLowerCase(); // eslint-disable-line  no-unused-vars
 
-      if (/\.youtube(-nocookie)\./.test(host)) {
+      if (/\.youtube(-nocookie)?\./.test(host)) {
         return new Youtube(el);
       }
       return new Iframe(el);
