@@ -1,6 +1,10 @@
 import { widgetStore } from '../lib/WidgetStore';
 import UcBridge from '../lib/UcBridge';
 
+const DEFAULT_WIDGET_TEXT = 'This external content may collect data about your activity. ' +
+  'Click the button below to show the content.';
+const DEFAULT_WIDGET_ACCEPT = 'Activate';
+
 /**
  * Base widget class
  */
@@ -32,10 +36,26 @@ class Base {
      */
     this.height = this.el.getAttribute('height');
     /**
-     * Usercentrics Service ID defined via data-uc-id on the widget
-     * @type {string}
+     * Widget configuration
+     * @type {{}}
      */
-    this.ucId = this.el.getAttribute('data-uc-id');
+    this.cfg = {
+      /**
+       * Usercentrics Service ID defined via data-uc-id on the widget
+       * @type {string}
+       */
+      ucId: this.el.getAttribute('data-uc-id'),
+      /**
+       * Custom widget text
+       * @type {string}
+       */
+      text: this.el.getAttribute('data-text'),
+      /**
+       * Custom accept label
+       * @type {string}
+       */
+      accept: this.el.getAttribute('data-accept')
+    };
   }
 
   /**
@@ -44,8 +64,16 @@ class Base {
    * @returns {string}
    */
   getEmbeddingText () {
-    return 'This external content may collect data about your activity. ' +
-      'Click the button below to show the content.';
+    return this.cfg.text || DEFAULT_WIDGET_TEXT;
+  }
+
+  /**
+   * Returns the accept button text
+   *
+   * @return {string}
+   */
+  getAcceptButtonLabel () {
+    return this.cfg.accept || DEFAULT_WIDGET_ACCEPT;
   }
 
   /**
@@ -54,13 +82,13 @@ class Base {
    * @returns {string}
    */
   getEmbedding () {
-    return `
-            <img class="uc-widget-background" src="${this.getBackground()}"/>
-            <div class="uc-widget-embedding">
-                <div class="uc-widget-text">${this.getEmbeddingText()}</div>
-                <div class="uc-widget-control"><button class="uc-widget-accept">Activate</button></div>
-            </div>
-        `;
+    return `\
+<img class="uc-widget-background" src="${this.getBackground()}"/>\
+<div class="uc-widget-embedding">\
+  <div class="uc-widget-text">${this.getEmbeddingText()}</div>\
+  <div class="uc-widget-control"><button class="uc-widget-accept">${this.getAcceptButtonLabel()}</button></div>\
+</div>\
+`;
   }
 
   /**
@@ -78,12 +106,14 @@ class Base {
    * @param {boolean} fromWidget Indicates if the activation happened from the current Widget
    */
   activate (fromWidget) {
-    widgetStore.unregister(this.ucId, this);
-    widgetStore.activate(this.ucId);
+    const ucId = this.cfg.ucId;
+
+    widgetStore.unregister(ucId, this);
+    widgetStore.activate(ucId);
 
     if (fromWidget) {
       const cmp = new UcBridge();
-      cmp.setConsent(this.ucId);
+      cmp.setConsent(ucId);
     }
   }
 
@@ -108,7 +138,7 @@ class Base {
 
     this.container = container;
 
-    widgetStore.register(this.ucId, this);
+    widgetStore.register(this.cfg.ucId, this);
   }
 }
 

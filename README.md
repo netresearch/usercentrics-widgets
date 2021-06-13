@@ -7,7 +7,7 @@ Usercentrics Widgets
 ![size ucw.js](https://img.shields.io/github/size/philsch/usercentrics-widgets/dist/ucw.js?style=flat-square&label=/dist/ucw.js)
 ![size ucw.legacy.js](https://img.shields.io/github/size/philsch/usercentrics-widgets/dist/ucw.legacy.js?style=flat-square&label=/dist/ucw.legacy.js)
 
-Lightweight placeholders for third party content of your website (e.g. Youtube Videos) compatible with the 
+Lightweight customizable placeholders for third party content of your website (e.g. Youtube Videos) compatible with the 
 [Usercentrics CMP](https://usercentrics.com).
 
 #### Disclaimer
@@ -22,7 +22,7 @@ Lightweight placeholders for third party content of your website (e.g. Youtube V
 
 I have just started with this project, please create a Github issue if you encounter any bugs, thanks! 
 
-## 🚀 Howto
+## 🚀 Quickstart
 
 1. Setup Usercentrics CMP
 1. For each `iframe` elements you want to replace
@@ -59,7 +59,21 @@ Refer to the [/example/](./example) directory for complete examples.
 * ✅ all iframes
 * ⏳ background images only for Youtube at the moment
 
-## 🎨 Customization
+## 🛠 Customization
+
+All widgets can be changed via data attributes:
+
+| Attribute     | Description                   | Example                                        |
+| ------------- | ----------------------------- | ---------------------------------------------- |
+| `data-src`    | `src` of the original element | `data-src="https://www.youtube.com/embed/xxx"` |
+| `data-text`   | Text for the placeholder      | `data-text="We need your consent"`             |
+| `data-accept` | Label for the accept button   | `data-accept="ok"`             |
+
+## 🎨 Styling
+
+<p align="center">
+  <img src="/example/customized.png" alt="screenshot customization" height="400px"/>
+</p>
 
 Instead of using the predefined CSS file, you can use your own. See [/style/ucw.css](/style/ucw.css) as a reference
-which CSS classes need to be defined.
+which CSS classes need to be defined and [/example/customized.html](/example/customized.html) as an example.

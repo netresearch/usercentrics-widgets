@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Customization example</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link type="text/css" rel="stylesheet" href="../dist/ucw.css"/>
+    <style>
+        .uc-widget-container {
+            font-family: "Comic Sans MS" !important;
+        }
+
+        .uc-widget-embedding {
+            padding: 30px;
+            border: 3px white solid;
+            background: rgba(255, 255, 255, 0.3) url("https://upload.wikimedia.org/wikipedia/commons/e/e9/Schatzkarte.svg");
+            background-blend-mode: color;
+            background-size: cover;
+        }
+
+        .uc-widget-accept {
+            width: 90%;
+            color: black;
+            border: 2px black solid;
+            background: white;
+        }
+
+        .uc-widget-accept:hover {
+            background: gray;
+        }
+
+        .uc-widget-accept::before {
+            content: url("https://upload.wikimedia.org/wikipedia/commons/8/8e/Treasure_chest_with_gold_coins.svg");
+            position: relative;
+            display: inline-block;
+            vertical-align: middle;
+            width: 24px;
+            left: -10px;
+        }
+    </style>
+    <script id="usercentrics-cmp" data-settings-id="sYVERXQJG"
+            src="https://app.usercentrics.eu/browser-ui/latest/bundle.js" defer=""></script>
+</head>
+<body>
+<div style="text-align: center; margin: 20px">
+    <iframe width="560" height="315"
+            class="uc-widget"
+            data-src="https://www.youtube-nocookie.com/embed/yRh-dzrI4Z4"
+            data-uc-id="BJz7qNsdj-7"
+            data-text="Arrrg... Do you want cookies?"
+            data-accept="Give me cookies!"
+            title="YouTube video player" frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+    </iframe>
+    <br/><br/>
+    <div>Attribution:</div>
+    <br/>
+    <div><a href="https://commons.wikimedia.org/wiki/File:Treasure_chest_with_gold_coins.svg">Clker-Free-Vector-Images on Pixabay</a>, CC0, via Wikimedia Commons</div>
+    <div><a href="https://commons.wikimedia.org/wiki/File:Schatzkarte.svg">Treasure map: Prawny (CC0)Compass: OpenClipart-Vectors (CC0)Derivative work: Sonja Weiland</a>, <a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>, via Wikimedia Commons</div>
+</div>
+<script src="../dist/ucw.js"></script>
+</body>
+</html>
