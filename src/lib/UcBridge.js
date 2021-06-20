@@ -15,10 +15,10 @@ class UcBridge {
   }
 
   /**
-   * Wait for specific consent to be given from the CMP itself
+   * Retrieve current consent from CMP when ready
    *
    * @param {string} ucId Usercentrics Service ID
-   * @param {function} callback Called when consent was given inside the CMP
+   * @param {function} callback Called when CMP is ready and consent could be read
    */
   waitForCmpConsent (ucId, callback) {
     this.waitForCmp(() => {

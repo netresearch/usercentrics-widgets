@@ -1,5 +1,8 @@
 import UcBridge from './UcBridge';
 
+/**
+ * Store to manage all active widgets
+ */
 class WidgetStore {
   constructor () {
     this.store = {};
@@ -47,7 +50,7 @@ class WidgetStore {
   }
 
   /**
-   * Triggers activation of all widgets for the given Service ID and removed them
+   * Triggers activation of all widgets for the given Service ID and remove them
    * from the store
    *
    * @param {string} ucId Usercentrics Service ID
@@ -75,7 +78,7 @@ class WidgetStore {
       cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
     }
 
-    // react on changed of the CMP based UI events
+    // react on changes of the CMP based UI events
     window.addEventListener('UC_UI_VIEW_CHANGED', (e) => {
       if (e.detail && (e.detail.previousView === 'NONE' || e.detail.previousView === 'PRIVACY_BUTTON')) {
         return;

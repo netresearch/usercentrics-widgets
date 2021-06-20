@@ -1,3 +1,6 @@
+/**
+ * Utility class to parse URLs
+ */
 class UrlParser {
   /**
    *

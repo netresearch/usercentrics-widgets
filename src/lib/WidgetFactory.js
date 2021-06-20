@@ -2,6 +2,9 @@ import Youtube from '../widgets/Youtube';
 import Iframe from '../widgets/Iframe';
 import UrlParser from './UrlParser';
 
+/**
+ * Factory for all the widget types
+ */
 class WidgetFactory {
   /**
    *
