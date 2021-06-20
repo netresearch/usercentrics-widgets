@@ -1,8 +1,8 @@
 {
   "name": "usercentrics-widgets",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Lightweight placeholders compatible with Usercentrics CMP",
-  "main": "index.js",
+  "browser": "./dist/ucw.js",
   "scripts": {
     "watch": "./node_modules/.bin/rollup -c rollup.config.js --configDebug -w",
     "build:css": "./node_modules/.bin/cleancss -o ./dist/ucw.min.css ./style/ucw.css",
@@ -13,6 +13,10 @@
   },
   "author": "Philipp Schmiedel <mail@philippschmiedel.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/philsch/usercentrics-widgets.git"
+  },
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-env": "^7.14.5",
