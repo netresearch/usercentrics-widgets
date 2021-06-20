@@ -22,7 +22,6 @@
 .uc-widget-embedding {
     position: absolute;
     display: grid;
-    grid-template-columns: auto;
     justify-content: center;
     top: 50%;
     left: 50%;
@@ -53,9 +52,10 @@
     max-width: 400px;
 }
 
-/* UC Widget embedding container for buttons */
-.uc-widget-controls {
-    text-align: center;
+/* UC Widget controls container styles */
+.uc-widget-control {
+    display: grid;
+    justify-content: center;
 }
 
 /* UC Widget embedding accept button styles */
@@ -70,7 +70,6 @@
     justify-content: center;
     padding: 12px 16px;
     max-width: 350px;
-    width: 50%;
 }
 .uc-widget-accept:hover {
     background: #0078cc;
