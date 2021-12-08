@@ -1,0 +1,14 @@
+{
+    "name": "netresearch/usercentrics-widgets",
+    "description": "Replace the UC block bundle",
+    "type": "library",
+    "license": "netresearch",
+    "authors": [
+        {
+            "name": "Sebastian Koschel",
+            "email": "sebastian.koschel@netresearch.de"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
