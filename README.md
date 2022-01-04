@@ -1,79 +1,92 @@
 Usercentrics Widgets 
 =====================
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/philsch/usercentrics-widgets?style=flat-square)
-[![Build Status](https://travis-ci.com/philsch/usercentrics-widgets.svg?branch=main)](https://travis-ci.com/philsch/usercentrics-widgets)
-[![js-semistandard-style](https://img.shields.io/badge/code%20style-semistandard-brightgreen.svg?style=flat-square)](https://github.com/standard/semistandard)
-![size ucw.js](https://img.shields.io/github/size/philsch/usercentrics-widgets/dist/ucw.js?style=flat-square&label=/dist/ucw.js)
-![size ucw.legacy.js](https://img.shields.io/github/size/philsch/usercentrics-widgets/dist/ucw.legacy.js?style=flat-square&label=/dist/ucw.legacy.js)
-
 Lightweight customizable placeholders for third party content of your website (e.g. Youtube Videos) compatible with the 
 [Usercentrics CMP](https://usercentrics.com).
-
-#### Disclaimer
 
 * Unlike the [Usercentrics Smart Data Protector](https://docs.usercentrics.com/#/smart-data-protector), this library 
   **does not block** third party content automatically. You have to change your website according the documentation 
   in this README!
   
-* This is a community project and no official product from Usercentrics.
+* This is based on a [community project](https://philsch.github.io/usercentrics-widgets/) and no official product from Usercentrics 
 
-## 🐞 Report bugs
 
-I have just started with this project, please create a Github issue if you encounter any bugs, thanks! 
-
-## 🚀 Quickstart
+## Quickstart
 
 1. Setup Usercentrics CMP
-1. For each `iframe` elements you want to replace
-    1. change `src` to `data-src`
-    1. add `class="uc-widget"`
-    1. add the attribute `data-uc-id` with the ID of the matching service 
+2. For each `iframe` and `script` elements you want to edit
+    1. change `src` to `data-uc-src`
+    2. add `data-usercentrics="[SERVICE NAME]"` with the Name of the matching service form Usercentrics admin area
+        1. (for example `data-usercentrics="Google Maps"` for Google Maps)
+    3. add the attribute `data-uc-id` with the ID of the matching service form Usercentrics admin area
        (for example `data-uc-id="BJz7qNsdj-7"` for Youtube)
-1. Download and add the files from the `/dist/` folder to your website
+3. The Packet can load via NPM 
+   1. Include the line in package.json
+      ```
+      "devDependencies": {
+          "usercentrics-widgets": "git+ssh://git@git.netresearch.de/usercentrics/usercentrics-widgets.git#1.1.0"
+      },
+      ```        
+
+4. Include and add the files from the `/dist/` folder to your template
     1. `ucw.min.css` into the `<head>` section: 
        ```html
        <head>
          <link type="text/css" rel="stylesheet" href="ucw.min.css"/>
        </head>
        ```
-    1. `ucw.js` (or if you need IE11 support `ucw.legacy.js`) at the end of your `<body>`
+    2. `ucw.js` (or if you need IE11 support `ucw.legacy.js`) at the end of your `<body>`
        ```html
          <script src="ucw.js"></script>
        </body>
        </html>
        ```
-       
-Instead of downloading the files you can also use the *jsdelivr CDN*, however it's recommended
-to host the files on your server to avoid third party requests.
 
-```
-https://cdn.jsdelivr.net/gh/philsch/usercentrics-widgets@main/dist/ucw.js
-https://cdn.jsdelivr.net/gh/philsch/usercentrics-widgets@main/dist/ucw.min.css
-```
+5. Example
+   1. IFrame (Google Maps) 
+      ```
+      <iframe data-usercentrics="Google Maps" data-uc-id="S1pcEj_jZX" data-uc-src="https://www.google.com/maps/d/u/1/embed?mid=XXX" width="852" height="480"></iframe>
+      ```
+   2. External Script (bookingkit)
+      ```
+      <div id="bookingKitContainer" data-cw="6dfd2c67962b9442abd2a28759a7445e"></div>
+      <script type="text/plain" data-usercentrics="bookingkit" data-uc-id="Ewb9uz1Rp" data-uc-src="https://4706b1799db005bf104e3875990fe07b.widget.bookingkit.net/bkscript/XXX/" async></script>
+      ```
+   3. Google Tag Manager and scripts without output can still be used as before
+      ```
+      <script type="text/plain" data-usercentrics="Google Tag Manager">
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','<f:format.raw>{settings.GoogleTagManagerContainerId}</f:format.raw>');
+      </script>
+      ```
 
-Refer to the [/example/](./example) directory for complete examples.
+## Build changes
+1. the /dist/ folder contains the latest version of the library
+2. Changes can do in the /src/ folder
+3. Install the library via NPM with `npm install`
+4. Build the changes with `npm run build`
 
-## 📺 Supported technologies
+## Supported technologies
+* all iframes
+* all scripts
+* background images only for Youtube at the moment
 
-* ✅ all iframes
-* ⏳ background images only for Youtube at the moment
-
-## 🛠 Customization
+## Customization
 
 All widgets can be changed via data attributes:
 
 | Attribute     | Description                   | Example                                        |
-| ------------- | ----------------------------- | ---------------------------------------------- |
-| `data-src`    | `src` of the original element | `data-src="https://www.youtube.com/embed/xxx"` |
+|---------------| ----------------------------- | ---------------------------------------------- |
+| `data-uc-src` | `src` of the original element | `data-uc-src="https://www.youtube.com/embed/xxx"` |
 | `data-text`   | Text for the placeholder      | `data-text="We need your consent"`             |
 | `data-accept` | Label for the accept button   | `data-accept="ok"`             |
 
-## 🎨 Styling
+##  Styling
 
-<p align="center">
-  <img src="/example/customized.png" alt="screenshot customization" height="400px"/>
-</p>
+There is a scss template in the style folder, this is independent of the css file from the dist folder
 
-Instead of using the predefined CSS file, you can use your own. See [/style/ucw.css](/style/ucw.css) as a reference
+Instead of using the original predefined CSS file, you can use your own. See [/style/ucw.css](/style/ucw.css) as a reference
 which CSS classes need to be defined and [/example/customized.html](/example/customized.html) as an example.

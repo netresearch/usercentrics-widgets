@@ -2,7 +2,6 @@ import WidgetFactory from './lib/WidgetFactory';
 import { toArray } from './lib/HtmlCollectionHelper';
 import { widgetStore } from './lib/WidgetStore';
 
-const WIDGET_CLASS = 'uc-widget';
 
 function init () {
   if (document.readyState !== 'complete') {
@@ -12,7 +11,8 @@ function init () {
 
   console.debug('init');
 
-  const elements = toArray(document.getElementsByClassName(WIDGET_CLASS));
+  const elements = toArray(document.querySelectorAll('[data-uc-src]'));
+
   for (const el of elements) {
     const widget = WidgetFactory.create(el);
     widget.render();

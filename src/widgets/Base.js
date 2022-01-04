@@ -1,9 +1,29 @@
 import { widgetStore } from '../lib/WidgetStore';
 import UcBridge from '../lib/UcBridge';
 
-const DEFAULT_WIDGET_TEXT = 'This external content may collect data about your activity. ' +
-  'Click the button below to show the content.';
-const DEFAULT_WIDGET_ACCEPT = 'Activate';
+
+/*
+ * Get default Text in page language
+ */
+const lang = document.documentElement.lang;
+
+const isGerman = lang === 'de-DE' || lang === 'de' || lang === 'DE';
+
+let DEFAULT_WIDGET_TEXT_SERVICE;
+let DEFAULT_WIDGET_TEXT;
+let DEFAULT_WIDGET_ACCEPT;
+
+if (isGerman) {
+  DEFAULT_WIDGET_TEXT_SERVICE = 'Wir nutzen den Service ';
+  DEFAULT_WIDGET_TEXT =         ' um Inhalte einzubetten. Dieser Service kann Daten zu Ihren Aktivitäten sammeln. ' +
+                                'Stimmen Sie der Nutzung des Service zu, um diese Inhalte anzuzeigen.';
+  DEFAULT_WIDGET_ACCEPT =       'Akzeptieren';
+} else {
+  DEFAULT_WIDGET_TEXT_SERVICE = 'We use the service ';
+  DEFAULT_WIDGET_TEXT =         ' to embed content. This service may collect data about your activities. ' +
+      'Agree to use the Service to view this content.';
+  DEFAULT_WIDGET_ACCEPT =       'Accept';
+}
 
 /**
  * Base widget class
@@ -41,20 +61,28 @@ class Base {
      */
     this.cfg = {
       /**
-       * Usercentrics Service ID defined via data-uc-id on the widget
+       * Usercentrics Service ID defined via data-data-uc-id on the widget
        * @type {string}
        */
       ucId: this.el.getAttribute('data-uc-id'),
+
+      /**
+       * Usercentrics Service Name defined via data-uc-id on the widget
+       * @type {string}
+       */
+      ucName: this.el.getAttribute('data-usercentrics'),
+
       /**
        * Custom widget text
        * @type {string}
        */
       text: this.el.getAttribute('data-text'),
+
       /**
        * Custom accept label
        * @type {string}
        */
-      accept: this.el.getAttribute('data-accept')
+      accept: this.el.getAttribute('data-accept'),
     };
   }
 
@@ -64,7 +92,8 @@ class Base {
    * @returns {string}
    */
   getEmbeddingText () {
-    return this.cfg.text || DEFAULT_WIDGET_TEXT;
+    return this.cfg.text || DEFAULT_WIDGET_TEXT_SERVICE + this.cfg.ucName + DEFAULT_WIDGET_TEXT;
+
   }
 
   /**
@@ -128,13 +157,17 @@ class Base {
 
     const width = this.width ? (isNaN(this.width) ? this.width : `${this.width}px`) : `${this.dimensions.width}px`;
     const height = this.height ? (isNaN(this.height) ? this.height : `${this.height}px`) : `${this.dimensions.height}px`;
-    container.setAttribute('style', `width: ${width}; height: ${height};`);
 
+    if (width === '0px' || height === '0px') {
+      container.setAttribute('style', `width: 100%; height: 250px;`);
+    } else {
+      container.setAttribute('style', `width: ${width}; height: ${height};`);
+    }
     this.el.replaceWith(container);
 
     container
-      .getElementsByClassName('uc-widget-accept')[0]
-      .addEventListener('click', this.activate.bind(this, true));
+        .getElementsByClassName('uc-widget-accept')[0]
+        .addEventListener('click', this.activate.bind(this, true));
 
     this.container = container;
 

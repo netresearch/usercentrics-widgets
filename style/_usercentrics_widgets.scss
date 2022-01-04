@@ -1,0 +1,75 @@
+////
+/// Netresearch
+///
+/// Include usercentrics widget style (based on bootstrap)
+///
+/// @author Sebastian Koschel <sebastian.koschel@netresearch.de>
+////
+
+/* Element before any script is run */
+iframe {
+    border: 0;
+}
+
+/* UC Widget main container */
+.uc-widget-container {
+    border: 0;
+    position: relative;
+    width: 100%;
+    min-height: 250px;
+    background: $gray-300;
+}
+
+/* UC Widget background image */
+.uc-widget-background {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    object-fit: cover;
+}
+
+/* UC Widget embedding containing text and buttons */
+.uc-widget-embedding {
+    position: absolute;
+    display: grid;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    background: rgba($gray-300, 0.8);
+}
+
+/* UC Widget embedding adjustments for different displays */
+@media (min-device-width: 0) {
+    .uc-widget-embedding {
+        width: 90%;
+    }
+}
+@media (min-device-width: 768px) {
+    .uc-widget-embedding {
+        width: 80%;
+    }
+}
+
+/* UC Widget embedding text styles */
+.uc-widget-text {
+    line-height: 1.6rem;
+    word-spacing: .05rem;
+    text-align: center;
+    max-width: 450px;
+    color: $body-color !important;
+    padding: 2rem;
+}
+
+/* UC Widget controls container styles */
+.uc-widget-control {
+    display: grid;
+    justify-content: center;
+}
+
+/* UC Widget embedding accept button styles */
+.uc-widget-accept {
+    @extend .btn;
+    @extend .btn-primary;
+}
+

@@ -9,8 +9,13 @@ class Iframe extends Base {
 
     const el = this.el;
     if (el) {
-      const dataSrc = el.getAttribute('data-src');
-      el.setAttribute('data-src', null);
+      const dataSrc = el.getAttribute('data-uc-src');
+      el.setAttribute('data-uc-src', null);
+
+      //for scripts
+      if (el.hasAttribute('type')) {
+        el.removeAttribute('type');
+      }
 
       this.container.parentElement.replaceChild(el, this.container);
       window.setTimeout(() => {

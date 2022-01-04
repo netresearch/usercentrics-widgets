@@ -12,7 +12,7 @@ class WidgetFactory {
    */
   static create (el) {
     try {
-      const url = new UrlParser(el.getAttribute('data-src'));
+      const url = new UrlParser(el.getAttribute('data-uc-src'));
       const host = url.host;
       const nodeType = el.tagName.toLowerCase(); // eslint-disable-line  no-unused-vars
 
