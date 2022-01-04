@@ -1,7 +1,7 @@
 import babel from 'rollup-plugin-babel';
 import strip from '@rollup/plugin-strip';
 import polyfill from 'rollup-plugin-polyfill';
-import {terser} from 'rollup-plugin-terser';
+import { terser } from 'rollup-plugin-terser';
 
 export default commandLineArgs => [
   // modern browsers
@@ -12,9 +12,11 @@ export default commandLineArgs => [
       format: 'iife'
     },
     plugins: [
-      !commandLineArgs.configDebug ? strip({
-        functions: ['console.*']
-      }) : undefined,
+      !commandLineArgs.configDebug
+        ? strip({
+          functions: ['console.*']
+        })
+        : undefined,
       babel({
         exclude: 'node_modules/**',
         presets: [
@@ -37,9 +39,11 @@ export default commandLineArgs => [
       format: 'iife'
     },
     plugins: [
-      !commandLineArgs.configDebug ? strip({
-        functions: ['console.*']
-      }) : undefined,
+      !commandLineArgs.configDebug
+        ? strip({
+          functions: ['console.*']
+        })
+        : undefined,
       polyfill(['./replaceWith.js']),
       babel({
         exclude: 'node_modules/**',

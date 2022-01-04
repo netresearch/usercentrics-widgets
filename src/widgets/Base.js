@@ -1,7 +1,6 @@
 import { widgetStore } from '../lib/WidgetStore';
 import UcBridge from '../lib/UcBridge';
 
-
 /*
  * Get default Text in page language
  */
@@ -15,14 +14,14 @@ let DEFAULT_WIDGET_ACCEPT;
 
 if (isGerman) {
   DEFAULT_WIDGET_TEXT_SERVICE = 'Wir nutzen den Service ';
-  DEFAULT_WIDGET_TEXT =         ' um Inhalte einzubetten. Dieser Service kann Daten zu Ihren Aktivitäten sammeln. ' +
+  DEFAULT_WIDGET_TEXT = ' um Inhalte einzubetten. Dieser Service kann Daten zu Ihren Aktivitäten sammeln. ' +
                                 'Stimmen Sie der Nutzung des Service zu, um diese Inhalte anzuzeigen.';
-  DEFAULT_WIDGET_ACCEPT =       'Akzeptieren';
+  DEFAULT_WIDGET_ACCEPT = 'Akzeptieren';
 } else {
   DEFAULT_WIDGET_TEXT_SERVICE = 'We use the service ';
-  DEFAULT_WIDGET_TEXT =         ' to embed content. This service may collect data about your activities. ' +
+  DEFAULT_WIDGET_TEXT = ' to embed content. This service may collect data about your activities. ' +
       'Agree to use the Service to view this content.';
-  DEFAULT_WIDGET_ACCEPT =       'Accept';
+  DEFAULT_WIDGET_ACCEPT = 'Accept';
 }
 
 /**
@@ -82,7 +81,7 @@ class Base {
        * Custom accept label
        * @type {string}
        */
-      accept: this.el.getAttribute('data-accept'),
+      accept: this.el.getAttribute('data-accept')
     };
   }
 
@@ -93,7 +92,6 @@ class Base {
    */
   getEmbeddingText () {
     return this.cfg.text || DEFAULT_WIDGET_TEXT_SERVICE + this.cfg.ucName + DEFAULT_WIDGET_TEXT;
-
   }
 
   /**
@@ -159,15 +157,15 @@ class Base {
     const height = this.height ? (isNaN(this.height) ? this.height : `${this.height}px`) : `${this.dimensions.height}px`;
 
     if (width === '0px' || height === '0px') {
-      container.setAttribute('style', `width: 100%; height: 250px;`);
+      container.setAttribute('style', 'width: 100%; height: 250px;');
     } else {
       container.setAttribute('style', `width: ${width}; height: ${height};`);
     }
     this.el.replaceWith(container);
 
     container
-        .getElementsByClassName('uc-widget-accept')[0]
-        .addEventListener('click', this.activate.bind(this, true));
+      .getElementsByClassName('uc-widget-accept')[0]
+      .addEventListener('click', this.activate.bind(this, true));
 
     this.container = container;
 

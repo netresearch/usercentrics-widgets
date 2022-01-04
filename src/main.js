@@ -2,7 +2,6 @@ import WidgetFactory from './lib/WidgetFactory';
 import { toArray } from './lib/HtmlCollectionHelper';
 import { widgetStore } from './lib/WidgetStore';
 
-
 function init () {
   if (document.readyState !== 'complete') {
     return;

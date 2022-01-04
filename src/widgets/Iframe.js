@@ -12,7 +12,7 @@ class Iframe extends Base {
       const dataSrc = el.getAttribute('data-uc-src');
       el.setAttribute('data-uc-src', null);
 
-      //for scripts
+      // for scripts
       if (el.hasAttribute('type')) {
         el.removeAttribute('type');
       }
