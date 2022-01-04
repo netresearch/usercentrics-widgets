@@ -21,12 +21,17 @@ Lightweight customizable placeholders for third party content of your website (e
     3. add the attribute `data-uc-id` with the ID of the matching service form Usercentrics admin area
        (for example `data-uc-id="BJz7qNsdj-7"` for Youtube)
 3. The Packet can load via NPM 
-   1. Include the line in package.json
+   1. Include in package.json
       ```
       "devDependencies": {
-          "usercentrics-widgets": "git+ssh://git@git.netresearch.de/usercentrics/usercentrics-widgets.git#1.1.0"
+           "@netresearch/usercentrics-widgets": "^1.0.7"
       },
       ```        
+      or
+   2. Install via NPM
+      ```
+      npm install @netresearch/usercentrics-widgets
+      ```
 
 4. Include and add the files from the `/dist/` folder to your template
     1. `ucw.min.css` into the `<head>` section: 
@@ -50,7 +55,7 @@ Lightweight customizable placeholders for third party content of your website (e
    2. External Script (bookingkit)
       ```
       <div id="bookingKitContainer" data-cw="6dfd2c67962b9442abd2a28759a7445e"></div>
-      <script type="text/plain" data-usercentrics="bookingkit" data-uc-id="Ewb9uz1Rp" data-uc-src="https://4706b1799db005bf104e3875990fe07b.widget.bookingkit.net/bkscript/XXX/" async></script>
+      <script type="text/plain" data-usercentrics="bookingkit" data-uc-id="Ewb9uz1Rp" data-uc-src="https://4706b1799db005bf104.widget.bookingkit.net/bkscript/XXX/" async></script>
       ```
    3. Google Tag Manager and scripts without output can still be used as before
       ```
@@ -63,7 +68,12 @@ Lightweight customizable placeholders for third party content of your website (e
       </script>
       ```
 
-## Build changes
+## Pipeline on github
+* The pipeline is based on [Github Actions](https://github.com/netresearch/usercentrics-widgets/actions)
+* The pipline build the `dist` folder and the JavaScript and css files
+* The pipline also runs the tests
+
+## Build changes locally
 1. the /dist/ folder contains the latest version of the library
 2. Changes can do in the /src/ folder
 3. Install the library via NPM with `npm install`
