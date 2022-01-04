@@ -6,6 +6,7 @@
   "files": [
     "/dist"
   ],
+  "private": false,
   "scripts": {
     "watch": "./node_modules/.bin/rollup -c rollup.config.js --configDebug -w",
     "build:css": "./node_modules/.bin/cleancss -o ./dist/ucw.min.css ./style/ucw.css",
