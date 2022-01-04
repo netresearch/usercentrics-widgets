@@ -1,11 +1,10 @@
 {
-  "name": "usercentrics-widgets",
-  "version": "1.1.0",
+  "name": "@netresearch/usercentrics-widgets",
+  "version": "1.0.0",
   "description": "Lightweight placeholders compatible with Usercentrics CMP",
   "browser": "./dist/ucw.js",
   "files": [
-    "/dist",
-    "/example"
+    "/dist"
   ],
   "scripts": {
     "watch": "./node_modules/.bin/rollup -c rollup.config.js --configDebug -w",
@@ -15,11 +14,21 @@
     "lint:fix": "./node_modules/.bin/semistandard --fix ./src/**",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Philipp Schmiedel <mail@philippschmiedel.com>",
+  "author": [
+    {
+      "name": "Sebastian Koschel - Netresearch",
+      "email": "sebastian.koschel@netresearch.de",
+      "url": "https://www.netresearch.de"
+    },
+    {
+      "name": "Philipp Schmiedel",
+      "email": "mail@philippschmiedel.com"
+    }
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/philsch/usercentrics-widgets.git"
+    "url": "https://github.com/netresearch/usercentrics-widgets.git"
   },
   "devDependencies": {
     "@babel/core": "^7.14.5",
@@ -34,5 +43,17 @@
     "semistandard": "^16.0.0",
     "snazzy": "^9.0.0",
     "standard": "^16.0.3"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/netresearch/usercentrics-widgets/issues"
+  },
+  "homepage": "https://github.com/netresearch/usercentrics-widgets#readme",
+  "main": "rollup.config.js",
+  "directories": {
+    "example": "example"
+  },
+  "dependencies": {},
+  "keywords": [
+    "usercentrics"
+  ]
 }
