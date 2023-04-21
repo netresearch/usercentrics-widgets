@@ -43,7 +43,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "semistandard": "^16.0.0",
     "snazzy": "^9.0.0",
-    "standard": "^16.0.3"
+    "standard": "^17.0.0"
   },
   "bugs": {
     "url": "https://github.com/netresearch/usercentrics-widgets/issues"
