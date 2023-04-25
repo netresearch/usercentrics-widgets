@@ -88,11 +88,12 @@ Lightweight customizable placeholders for third party content of your website (e
 
 All widgets can be changed via data attributes:
 
-| Attribute     | Description                   | Example                                        |
-|---------------| ----------------------------- | ---------------------------------------------- |
-| `data-uc-src` | `src` of the original element | `data-uc-src="https://www.youtube.com/embed/xxx"` |
-| `data-text`   | Text for the placeholder      | `data-text="We need your consent"`             |
-| `data-accept` | Label for the accept button   | `data-accept="ok"`             |
+| Attribute                  | Description                     | Example                                                                       |
+|----------------------------|---------------------------------|-------------------------------------------------------------------------------|
+| `data-uc-src`              | `src` of the original element   | `data-uc-src="https://www.youtube.com/embed/xxx"`                             |
+| `data-text`                | Text for the placeholder        | `data-text="We need your consent"`                                            |
+| `data-accept`              | Label for the accept button     | `data-accept="ok"`                                                            |
+| `data-uc-background-image` | URL for custom background-image | `data-uc-background-image="https://picsum.photos/id/12/1920/1080.jpg"` |
 
 ##  Styling
 
