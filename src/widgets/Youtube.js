@@ -12,7 +12,8 @@ class Youtube extends Iframe {
    */
   getBackground () {
     const src = this.el.getAttribute('data-uc-src');
-    if (!src) {
+    const hasBackgroundImageSet = this.el.hasAttribute('data-uc-background-image');
+    if (!src || hasBackgroundImageSet) {
       return super.getBackground();
     }
     try {
