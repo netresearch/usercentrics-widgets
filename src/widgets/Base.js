@@ -163,9 +163,14 @@ class Base {
     }
     this.el.replaceWith(container);
 
+    // save the activation method in the global scope, so it can be called from the button below,
+    // even after a clone of the node
+    const activationMethodName = `ucWidgetAcceptMethod${Math.floor(Math.random() * 1000000000)}`;
+    window[activationMethodName] = this.activate.bind(this, false);
+
     container
       .getElementsByClassName('uc-widget-accept')[0]
-      .addEventListener('click', this.activate.bind(this, true));
+      .setAttribute('onclick', `window['${activationMethodName}']()`);
 
     this.container = container;
 
