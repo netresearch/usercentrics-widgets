@@ -40,21 +40,6 @@ class Base {
      */
     this.el = el;
     /**
-     * Calculated dimensions of the original element
-     * @type {DOMRect}
-     */
-    this.dimensions = this.el.getBoundingClientRect();
-    /**
-     * Original node width
-     * @type {string|number}
-     */
-    this.width = this.el.getAttribute('width');
-    /**
-     * Original node height
-     * @type {string|number}
-     */
-    this.height = this.el.getAttribute('height');
-    /**
      * Widget configuration
      * @type {{}}
      */
@@ -149,19 +134,14 @@ class Base {
    * Render logic to show the widget
    */
   render () {
-    const container = document.createElement('div');
+    const { width: nodeWith, height: nodeHeight } = this.el.getBoundingClientRect();
 
+    const container = document.createElement('div');
     container.innerHTML = this.getEmbedding();
     container.setAttribute('class', 'uc-widget-container');
+    container.setAttribute('width', `${Math.floor(nodeWith)}px`);
+    container.setAttribute('height', `${Math.floor(nodeHeight)}px`);
 
-    const width = this.width ? (isNaN(this.width) ? this.width : `${this.width}px`) : `${this.dimensions.width}px`;
-    const height = this.height ? (isNaN(this.height) ? this.height : `${this.height}px`) : `${this.dimensions.height}px`;
-
-    if (width === '0px' || height === '0px') {
-      container.setAttribute('style', 'width: 100%; height: 250px;');
-    } else {
-      container.setAttribute('style', `width: ${width}; height: ${height};`);
-    }
     this.el.replaceWith(container);
 
     container
