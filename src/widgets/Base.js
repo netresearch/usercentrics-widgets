@@ -95,7 +95,7 @@ class Base {
    */
   getEmbedding () {
     return `\
-<img class="uc-widget-background" src="${this.getBackground()}"/>\
+<img class="uc-widget-background" src="${this.getBackground()}" alt="Background Image" width="100%" height="100%"/>\
 <div class="uc-widget-embedding">\
   <div class="uc-widget-text">${this.getEmbeddingText()}</div>\
   <div class="uc-widget-control"><button class="uc-widget-accept">${this.getAcceptButtonLabel()}</button></div>\
