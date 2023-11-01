@@ -1,7 +1,7 @@
-import babel from 'rollup-plugin-babel';
+import babel from '@rollup/plugin-babel';
 import strip from '@rollup/plugin-strip';
 import polyfill from 'rollup-plugin-polyfill';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 export default commandLineArgs => [
   // modern browsers
@@ -38,6 +38,7 @@ export default commandLineArgs => [
       file: 'dist/ucw.legacy.js',
       format: 'iife'
     },
+    external: ['./replaceWith.js'],
     plugins: [
       !commandLineArgs.configDebug
         ? strip({
