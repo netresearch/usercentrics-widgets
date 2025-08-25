@@ -78,7 +78,7 @@ class WidgetStore {
       cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
     }
 
-    // react on changes of the CMP based UI events
+    // react on changes of the CMP based UI events (v2)
     window.addEventListener('UC_UI_VIEW_CHANGED', (e) => {
       if (e.detail && (e.detail.previousView === 'NONE' || e.detail.previousView === 'PRIVACY_BUTTON')) {
         return;
@@ -87,6 +87,18 @@ class WidgetStore {
         cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
       }
     });
+
+    // react on consent changes for v3 API
+    if (window.Usercentrics) {
+      const add = window.Usercentrics.addEventListener || window.Usercentrics.on;
+      if (add) {
+        add.call(window.Usercentrics, 'consentChanged', () => {
+          for (const ucId of Object.keys(this.store)) {
+            cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
+          }
+        });
+      }
+    }
   }
 }
 
