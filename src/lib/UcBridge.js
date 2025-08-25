@@ -28,10 +28,17 @@ class UcBridge {
    *
    * @param {string} ucId Usercentrics Service ID
    * @param {function} callback Called when CMP is ready and consent could be read
-   */
+  */
   waitForCmpConsent (ucId, callback) {
     this.waitForCmp(() => {
-      (this.getConsent(ucId) === true) && callback();
+      const consent = this.getConsent(ucId);
+      if (consent && typeof consent.then === 'function') {
+        consent.then((result) => {
+          result === true && callback();
+        });
+      } else if (consent === true) {
+        callback();
+      }
     });
   }
 
@@ -78,24 +85,30 @@ class UcBridge {
    * Retrieves the current stored consent decision from the Usercentrics CMP
    *
    * @param {string} ucId Usercentrics Service ID
-   * @return {boolean}
+   * @return {boolean|Promise<boolean>}
    */
   getConsent (ucId) {
     try {
       if (window.Usercentrics && typeof window.Usercentrics.getServices === 'function') {
-        const consents = window.Usercentrics.getServices();
-        for (let i = 0; i < consents.length; i++) {
-          const service = consents[i];
-          if (service.id === ucId || service.templateId === ucId) {
-            if (service.consent && typeof service.consent.status !== 'undefined') {
-              return !!service.consent.status;
-            }
-            if (typeof service.status !== 'undefined') {
-              return !!service.status;
+        const result = window.Usercentrics.getServices();
+        const handle = (consents) => {
+          for (let i = 0; i < consents.length; i++) {
+            const service = consents[i];
+            if (service.id === ucId || service.templateId === ucId) {
+              if (service.consent && typeof service.consent.status !== 'undefined') {
+                return !!service.consent.status;
+              }
+              if (typeof service.status !== 'undefined') {
+                return !!service.status;
+              }
             }
           }
+          return false;
+        };
+        if (result && typeof result.then === 'function') {
+          return result.then(handle).catch(() => false);
         }
-        return false;
+        return handle(result);
       }
 
       const consents = window.UC_UI.getServicesBaseInfo();
