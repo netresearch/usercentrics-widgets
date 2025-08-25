@@ -1,8 +1,9 @@
 Usercentrics Widgets 
 =====================
 
-Lightweight customizable placeholders for third party content of your website (e.g. Youtube Videos) compatible with the 
-[Usercentrics CMP](https://usercentrics.com).
+Lightweight customizable placeholders for third party content of your website (e.g. Youtube Videos) compatible with the
+[Usercentrics CMP](https://usercentrics.com). The library supports both the classic `UC_UI` interface and the
+Usercentrics v3 Browser API.
 
 * Unlike the [Usercentrics Smart Data Protector](https://docs.usercentrics.com/#/smart-data-protector), this library 
   **does not block** third party content automatically. You have to change your website according the documentation 
