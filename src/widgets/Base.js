@@ -76,7 +76,34 @@ class Base {
    * @returns {string}
    */
   getEmbeddingText () {
-    return this.cfg.text || DEFAULT_WIDGET_TEXT_SERVICE + this.cfg.ucName + DEFAULT_WIDGET_TEXT;
+    // If custom text is provided on the element, it takes precedence
+    if (this.cfg.text) {
+      return this.cfg.text;
+    }
+    // Check global config injected via optional config JS
+    const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
+    // Resolve i18n config for current language if provided
+    const i18n = cfg && cfg.i18n ? cfg.i18n : null;
+    const langCfg = i18n ? (isGerman ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
+    // If a full HTML text is provided on language or root level, use it as-is
+    if (langCfg && typeof langCfg.textHtml === 'string' && langCfg.textHtml.length > 0) {
+      return langCfg.textHtml;
+    }
+    if (cfg && typeof cfg.textHtml === 'string' && cfg.textHtml.length > 0) {
+      return cfg.textHtml;
+    }
+    // Otherwise, allow overriding prefix/suffix and keep default concatenation with service name
+    const prefix = (langCfg && typeof langCfg.textServicePrefix === 'string')
+      ? langCfg.textServicePrefix
+      : (cfg && typeof cfg.textServicePrefix === 'string')
+        ? cfg.textServicePrefix
+        : DEFAULT_WIDGET_TEXT_SERVICE;
+    const suffix = (langCfg && typeof langCfg.textSuffixHtml === 'string')
+      ? langCfg.textSuffixHtml
+      : (cfg && typeof cfg.textSuffixHtml === 'string')
+        ? cfg.textSuffixHtml
+        : DEFAULT_WIDGET_TEXT;
+    return prefix + this.cfg.ucName + suffix;
   }
 
   /**
@@ -85,7 +112,37 @@ class Base {
    * @return {string}
    */
   getAcceptButtonLabel () {
-    return this.cfg.accept || DEFAULT_WIDGET_ACCEPT;
+    if (this.cfg.accept) {
+      return this.cfg.accept;
+    }
+    const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
+    const i18n = cfg && cfg.i18n ? cfg.i18n : null;
+    const langCfg = i18n ? (isGerman ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
+    if (langCfg && typeof langCfg.acceptLabel === 'string' && langCfg.acceptLabel.length > 0) {
+      return langCfg.acceptLabel;
+    }
+    if (cfg && typeof cfg.acceptLabel === 'string' && cfg.acceptLabel.length > 0) {
+      return cfg.acceptLabel;
+    }
+    return DEFAULT_WIDGET_ACCEPT;
+  }
+
+  /**
+   * Returns additional CSS class for the accept control wrapper
+   * @return {string}
+   */
+  getAcceptLabelClass () {
+    const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
+    const i18n = cfg && cfg.i18n ? cfg.i18n : null;
+    const langCfg = i18n ? (isGerman ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
+
+    if (langCfg && typeof langCfg.acceptLabelClass === 'string' && langCfg.acceptLabelClass.length > 0) {
+      return langCfg.acceptLabelClass;
+    }
+    if (cfg && typeof cfg.acceptLabelClass === 'string' && cfg.acceptLabelClass.length > 0) {
+      return cfg.acceptLabelClass;
+    }
+    return '';
   }
 
   /**
@@ -94,11 +151,15 @@ class Base {
    * @returns {string}
    */
   getEmbedding () {
+    const extraClass = this.getAcceptLabelClass();
+    const controlClass = extraClass && extraClass.trim().length > 0
+      ? `uc-widget-control ${extraClass.trim()}`
+      : 'uc-widget-control';
     return `\
 <img class="uc-widget-background" src="${this.getBackground()}" alt="Background Image" width="100%" height="100%"/>\
 <div class="uc-widget-embedding">\
   <div class="uc-widget-text">${this.getEmbeddingText()}</div>\
-  <div class="uc-widget-control"><button class="uc-widget-accept">${this.getAcceptButtonLabel()}</button></div>\
+  <div class="uc-widget-control"><button class="uc-widget-accept ${controlClass}">${this.getAcceptButtonLabel()}</button></div>\
 </div>\
 `;
   }
