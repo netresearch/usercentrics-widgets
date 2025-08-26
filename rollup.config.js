@@ -2,6 +2,7 @@ import babel from '@rollup/plugin-babel';
 import strip from '@rollup/plugin-strip';
 import polyfill from 'rollup-plugin-polyfill';
 import terser from '@rollup/plugin-terser';
+import copy from 'rollup-plugin-copy';
 
 export default commandLineArgs => [
   // modern browsers
@@ -28,7 +29,18 @@ export default commandLineArgs => [
           ]
         ]
       }),
-      terser()
+      terser(),
+      copy({
+        targets: [
+          {
+            src: 'src/config/ucw.config.example.js',
+            dest: 'dist',
+            rename: 'ucw.config.js'
+          }
+        ],
+        hook: 'writeBundle',
+        copyOnce: true
+      })
     ]
   },
   // old browsers
