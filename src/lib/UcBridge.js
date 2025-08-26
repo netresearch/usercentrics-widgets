@@ -1,20 +1,29 @@
+/**
+ * UcBridge class provides an interface to interact with the Usercentrics Consent Management Platform (CMP).
+ * It supports both Usercentrics v2 and v3 APIs and provides methods to wait for the CMP to be ready,
+ * retrieve consent, and set consent for specific services.
+ */
 class UcBridge {
   /**
-   * Wait for Usercentrics CMP (v2 or v3) to be ready
+   * Waits for the Usercentrics CMP (v2 or v3) to be ready and executes the provided callback.
    *
-   * @param {function} callback
+   * @param {function} callback - The function to execute once the CMP is ready.
    */
-  waitForCmp (callback) {
+  waitForCmp(callback) {
     if (this.isCmpReady()) {
       callback();
       return;
     }
 
     if (window.Usercentrics) {
-      const add = window.Usercentrics.addEventListener || window.Usercentrics.on;
-      if (add) {
-        add.call(window.Usercentrics, 'ready', callback);
-        return;
+      try {
+        const add = window.Usercentrics.addEventListener || window.Usercentrics.on;
+        if (add) {
+          add.call(window.Usercentrics, 'ready', callback);
+          return;
+        }
+      } catch (e) {
+        console.error('Error adding Usercentrics event listener:', e);
       }
     }
 
@@ -24,12 +33,12 @@ class UcBridge {
   }
 
   /**
-   * Retrieve current consent from CMP when ready
+   * Waits for the CMP to be ready and retrieves the current consent for a specific service.
    *
-   * @param {string} ucId Usercentrics Service ID
-   * @param {function} callback Called when CMP is ready and consent could be read
-  */
-  waitForCmpConsent (ucId, callback) {
+   * @param {string} ucId - The Usercentrics Service ID.
+   * @param {function} callback - The function to execute if consent is granted.
+   */
+  waitForCmpConsent(ucId, callback) {
     this.waitForCmp(() => {
       const consent = this.getConsent(ucId);
       if (consent && typeof consent.then === 'function') {
@@ -43,11 +52,20 @@ class UcBridge {
   }
 
   /**
-   * Indicates the Usercentrics CMP is ready
+   * Checks if the Usercentrics CMP is ready.
    *
-   * @return {boolean}
+   * @return {boolean} - Returns true if the CMP is ready, otherwise false.
    */
-  isCmpReady () {
+  isCmpReady() {
+    // Prefer UC v3 (__ucCmp) readiness if available
+    if (window.__ucCmp && typeof window.__ucCmp.isInitialized === 'function') {
+      try {
+        return window.__ucCmp.isInitialized();
+      } catch (e) {
+        return false;
+      }
+    }
+    // Fallback to Usercentrics (v3 SDK global) readiness if available
     if (window.Usercentrics && typeof window.Usercentrics.isInitialized === 'function') {
       try {
         return window.Usercentrics.isInitialized();
@@ -55,15 +73,17 @@ class UcBridge {
         return false;
       }
     }
-    return window.UC_UI && window.UC_UI.isInitialized();
+    // Legacy UC v2 UI readiness
+    return !!(window.UC_UI && typeof window.UC_UI.isInitialized === 'function' && window.UC_UI.isInitialized());
   }
 
   /**
-   * Signals the Ucercentrics CMP that a consent was given via widget
+   * Signals the Usercentrics CMP that consent has been given for a specific service.
    *
-   * @param {string} ucId Usercentrics Service ID
+   * @param {string} ucId - The Usercentrics Service ID.
+   * @throws {Error} - Throws an error if the CMP is not ready or if the consent method is missing.
    */
-  setConsent (ucId) {
+  setConsent(ucId) {
     if (!this.isCmpReady()) {
       throw new Error('Usercentrics CMP is not ready!');
     }
@@ -78,45 +98,49 @@ class UcBridge {
       return;
     }
 
-    window.UC_UI.acceptService(ucId); // TODO: should we wait for the CMP consent server answer?
+    window.UC_UI.acceptService(ucId);
   }
 
   /**
-   * Retrieves the current stored consent decision from the Usercentrics CMP
+   * Retrieves the current stored consent decision for a specific service from the Usercentrics CMP.
    *
-   * @param {string} ucId Usercentrics Service ID
-   * @return {boolean|Promise<boolean>}
+   * @param {string} ucId - The Usercentrics Service ID.
+   * @return {boolean|Promise<boolean>} - Returns true if consent is granted, false otherwise.
+   *                                     If using Usercentrics v3, it may return a Promise.
    */
-  getConsent (ucId) {
+  getConsent(ucId) {
     try {
-      if (window.Usercentrics && typeof window.Usercentrics.getServices === 'function') {
-        const result = window.Usercentrics.getServices();
-        const handle = (consents) => {
-          for (let i = 0; i < consents.length; i++) {
-            const service = consents[i];
-            if (service.id === ucId || service.templateId === ucId) {
-              if (service.consent && typeof service.consent.status !== 'undefined') {
-                return !!service.consent.status;
-              }
-              if (typeof service.status !== 'undefined') {
-                return !!service.status;
-              }
+      // UC v3: Retrieve consent details using the __ucCmp API.
+      if (window.__ucCmp && typeof window.__ucCmp.getConsentDetails === 'function') {
+        const p = window.__ucCmp.getConsentDetails();
+        return p.then((details) => {
+          if (!details) return false;
+          if (details.consent && Array.isArray(details.consent.serviceIds)) {
+            if (details.consent.serviceIds.includes(ucId)) {
+              return true;
             }
           }
-          return false;
-        };
-        if (result && typeof result.then === 'function') {
-          return result.then(handle).catch(() => false);
-        }
-        return handle(result);
+          if (!details.services) return false;
+          const svc = Array.isArray(details.services)
+            ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
+            : details.services[ucId] || details.services[String(ucId)] || null;
+
+          return svc ? !!(svc.consent?.status ?? svc.status) : false;
+        });
       }
 
-      const consents = window.UC_UI.getServicesBaseInfo();
-      for (let i = 0; i < consents.length; i++) {
-        if (consents[i].id === ucId) {
-          return !!consents[i].consent.status;
+      // UC v2: Retrieve consent using the legacy API.
+      if (window.UC_UI && typeof window.UC_UI.getServicesBaseInfo === 'function') {
+        const consents = window.UC_UI.getServicesBaseInfo();
+        for (let i = 0; i < consents.length; i++) {
+          if (consents[i].id === ucId) {
+            return !!(consents[i].consent && consents[i].consent.status);
+          }
         }
+        return false;
       }
+
+      // Unknown environment.
       return false;
     } catch (e) {
       return false;
