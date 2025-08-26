@@ -115,11 +115,17 @@ class UcBridge {
         const p = window.__ucCmp.getConsentDetails();
         return p.then((details) => {
           if (!details) return false;
+          // If overall consent status is ALL_ACCEPTED, treat service as consented
+          if (details.consent && details.consent.status === 'ALL_ACCEPTED') {
+            return true;
+          }
+          // Prefer v3 global consent list: if serviceIds contains ucId, it's active
           if (details.consent && Array.isArray(details.consent.serviceIds)) {
             if (details.consent.serviceIds.includes(ucId)) {
               return true;
             }
           }
+          // Fallback to services collection if available
           if (!details.services) return false;
           const svc = Array.isArray(details.services)
             ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
