@@ -1,8 +1,9 @@
 Usercentrics Widgets 
 =====================
 
-Lightweight customizable placeholders for third party content of your website (e.g. Youtube Videos) compatible with the 
-[Usercentrics CMP](https://usercentrics.com).
+Lightweight customizable placeholders for third party content of your website (e.g. Youtube Videos) compatible with the
+[Usercentrics CMP](https://usercentrics.com). The library supports both the classic `UC_UI` interface and the
+Usercentrics v3 Browser API.
 
 * Unlike the [Usercentrics Smart Data Protector](https://docs.usercentrics.com/#/smart-data-protector), this library 
   **does not block** third party content automatically. You have to change your website according the documentation 
@@ -101,3 +102,43 @@ There is a scss template in the style folder, this is independent of the css fil
 
 Instead of using the original predefined CSS file, you can use your own. See [/style/ucw.css](/style/ucw.css) as a reference
 which CSS classes need to be defined and [/example/customized.html](/example/customized.html) as an example.
+
+
+
+## Configuration via config file (optional)
+
+You can centrally control the behavior and texts of the widgets using an optional config file. The file exposes a global variable `window.UCW_WIDGET_CONFIG`.
+
+How to include:
+
+- Include `ucw.js` (or `ucw.legacy.js`) with an additional `data-config` attribute pointing to your configuration file.
+
+Example:
+
+```html
+<head>
+  <link type="text/css" rel="stylesheet" href="/assets/{BUILD_NUMBER}/js/usercentrics-widgets/ucw.min.css" />
+</head>
+<body>
+  ...
+  <script src="/assets/{BUILD_NUMBER}/js/usercentrics-widgets/ucw.js"
+          data-config="/assets/{BUILD_NUMBER}/js/usercentrics-widgets/ucw.config.js"></script>
+</body>
+```
+
+Structure of the configuration (`window.UCW_WIDGET_CONFIG`):
+
+- i18n (language-specific; keys de/en, case-insensitive)
+  - textHtml: Complete HTML for the placeholder (overrides prefix/suffix variant)
+  - acceptLabel: Text of the accept button
+  - acceptLabelClass: Additional CSS class(es) for the control element wrapping the button (added alongside `uc-widget-control`)
+  - textServicePrefix: Text before the service name, if `textHtml` is not used
+  - textSuffixHtml: HTML after the service name, if `textHtml` is not used
+- Root level (optional, fallback for all languages):
+  - textHtml, acceptLabel, acceptLabelClass, textServicePrefix, textSuffixHtml
+
+Notes:
+- Language is detected via the `lang` attribute on the `<html>` element. For German, `de-DE`, `de` or `DE` are supported; otherwise English is used.
+- A complete example can be found here:
+  - `src/static/assets/js/usercentrics-widgets/src/config/ucw.config.example.js`
+  - A project example is here: `src/static/assets/js/usercentrics-widgets.config.js`
