@@ -45,8 +45,9 @@ function isSafeScriptUrl(url) {
     const parsed = new URL(url, window.location.origin);
     if (parsed.origin !== window.location.origin) return false;
     // Additional restrictions can be added here, e.g. whitelist paths, etc.
-    // Allow only .js files (optional safety).
-    if (!parsed.pathname.endsWith('.js')) return false;
+    // Allow only .js files (optional safety, case-insensitive, strict).
+    const extMatch = parsed.pathname.match(/\.([a-z0-9]+)$/i);
+    if (!extMatch || extMatch[1].toLowerCase() !== 'js') return false;
     return true;
   } catch (e) {
     // If URL constructor fails, treat as unsafe
