@@ -9,7 +9,7 @@ class UcBridge {
    *
    * @param {function} callback - The function to execute once the CMP is ready.
    */
-  waitForCmp(callback) {
+  waitForCmp (callback) {
     if (this.isCmpReady()) {
       callback();
       return;
@@ -50,7 +50,7 @@ class UcBridge {
    * @param {string} ucId - The Usercentrics Service ID.
    * @param {function} callback - The function to execute if consent is granted.
    */
-  waitForCmpConsent(ucId, callback) {
+  waitForCmpConsent (ucId, callback) {
     this.waitForCmp(() => {
       const consent = this.getConsent(ucId);
       if (consent && typeof consent.then === 'function') {
@@ -68,7 +68,7 @@ class UcBridge {
    *
    * @return {boolean} - Returns true if the CMP is ready, otherwise false.
    */
-  isCmpReady() {
+  isCmpReady () {
     // Prefer UC v3 (__ucCmp) readiness if available
     if (window.__ucCmp && typeof window.__ucCmp.isInitialized === 'function') {
       try {
@@ -87,7 +87,7 @@ class UcBridge {
    * @param {string} ucId - The Usercentrics Service ID.
    * @throws {Error} - Throws an error if the CMP is not ready or if the consent method is missing.
    */
-  setConsent(ucId) {
+  setConsent (ucId) {
     if (!this.isCmpReady()) {
       throw new Error('Usercentrics CMP is not ready!');
     }
@@ -96,7 +96,7 @@ class UcBridge {
     if (window.__ucCmp) {
       try {
         // New recommended approach: batch update services consents and then save
-        const serviceConsents = [{id: ucId, consent: true}];
+        const serviceConsents = [{ id: ucId, consent: true }];
 
         if (typeof window.__ucCmp.updateServicesConsents === 'function') {
           const maybePromise = window.__ucCmp.updateServicesConsents(serviceConsents);
@@ -133,7 +133,7 @@ class UcBridge {
    * @return {boolean|Promise<boolean>} - Returns true if consent is granted, false otherwise.
    *                                     If using Usercentrics v3, it may return a Promise.
    */
-  getConsent(ucId) {
+  getConsent (ucId) {
     try {
       // UC v3: Retrieve consent details using the __ucCmp API.
       if (window.__ucCmp && typeof window.__ucCmp.getConsentDetails === 'function') {
@@ -149,10 +149,10 @@ class UcBridge {
               const given = (svc.consent && typeof svc.consent.given !== 'undefined')
                 ? !!svc.consent.given
                 : (typeof svc.consent?.status !== 'undefined')
-                  ? !!svc.consent.status
-                  : (typeof svc.status !== 'undefined')
-                    ? !!svc.status
-                    : false;
+                    ? !!svc.consent.status
+                    : (typeof svc.status !== 'undefined')
+                        ? !!svc.status
+                        : false;
               return given === true;
             }
           }
