@@ -96,13 +96,13 @@ class Base {
     const prefix = (langCfg && typeof langCfg.textServicePrefix === 'string')
       ? langCfg.textServicePrefix
       : (cfg && typeof cfg.textServicePrefix === 'string')
-        ? cfg.textServicePrefix
-        : DEFAULT_WIDGET_TEXT_SERVICE;
+          ? cfg.textServicePrefix
+          : DEFAULT_WIDGET_TEXT_SERVICE;
     const suffix = (langCfg && typeof langCfg.textSuffixHtml === 'string')
       ? langCfg.textSuffixHtml
       : (cfg && typeof cfg.textSuffixHtml === 'string')
-        ? cfg.textSuffixHtml
-        : DEFAULT_WIDGET_TEXT;
+          ? cfg.textSuffixHtml
+          : DEFAULT_WIDGET_TEXT;
     return prefix + this.cfg.ucName + suffix;
   }
 

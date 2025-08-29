@@ -88,16 +88,17 @@ class WidgetStore {
       }
     });
 
-    // react on consent changes for v3 API
-    if (window.Usercentrics) {
-      const add = window.Usercentrics.addEventListener || window.Usercentrics.on;
-      if (add) {
-        add.call(window.Usercentrics, 'consentChanged', () => {
+    // react on consent changes for UC v3 (__ucCmp) if available
+    try {
+      if (window.__ucCmp && typeof window.__ucCmp.addEventListener === 'function') {
+        window.__ucCmp.addEventListener('consentChanged', () => {
           for (const ucId of Object.keys(this.store)) {
             cmp.waitForCmpConsent(ucId, () => this.activate(ucId));
           }
         });
       }
+    } catch (e) {
+      // ignore
     }
   }
 }
