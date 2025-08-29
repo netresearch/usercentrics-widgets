@@ -10,7 +10,8 @@ async function loadConfigIfNeeded () {
       return;
     }
     const cfgPath = scriptEl.getAttribute('data-config');
-    if (!cfgPath) {
+    if (!cfgPath || !isSafeScriptUrl(cfgPath)) {
+      // Optionally: console.warn('Unsafe or missing config script source:', cfgPath);
       return;
     }
     // Prevent double loading
@@ -28,6 +29,28 @@ async function loadConfigIfNeeded () {
     await window.__UCW_CFG_LOADING__;
   } catch (e) {
     // fail silent: continue without config
+  }
+}
+
+/**
+ * Checks whether a script URL is safe to load.
+ * Allows only same-origin relative or absolute URLs, and blocks javascript:, data:, etc.
+ */
+function isSafeScriptUrl(url) {
+  try {
+    // Disallow javascript: and data: and vbscript: schemes.
+    const prohibited = /^(?:\s*javascript:|\s*data:|\s*vbscript:)/i;
+    if (prohibited.test(url)) return false;
+    // Try parsing the URL to allow only same-origin or relative URLs.
+    const parsed = new URL(url, window.location.origin);
+    if (parsed.origin !== window.location.origin) return false;
+    // Additional restrictions can be added here, e.g. whitelist paths, etc.
+    // Allow only .js files (optional safety).
+    if (!parsed.pathname.endsWith('.js')) return false;
+    return true;
+  } catch (e) {
+    // If URL constructor fails, treat as unsafe
+    return false;
   }
 }
 
