@@ -15,16 +15,28 @@ class UcBridge {
       return;
     }
 
-    if (window.Usercentrics) {
-      try {
-        const add = window.Usercentrics.addEventListener || window.Usercentrics.on;
-        if (add) {
-          add.call(window.Usercentrics, 'ready', callback);
-          return;
-        }
-      } catch (e) {
-        console.error('Error adding Usercentrics event listener:', e);
+    // Prefer UC v3 (__ucCmp) event if available; fallback to legacy UI event
+    try {
+      if (window.__ucCmp && typeof window.__ucCmp.isInitialized === 'function') {
+        // If __ucCmp is already initialized, callback will be fired from the early return above.
+        // Some implementations also dispatch a custom event when initialized; as a safe fallback,
+        // we poll once with requestAnimationFrame until initialized.
+        const poll = () => {
+          try {
+            if (window.__ucCmp && window.__ucCmp.isInitialized()) {
+              callback();
+            } else {
+              window.requestAnimationFrame(poll);
+            }
+          } catch (e) {
+            window.requestAnimationFrame(poll);
+          }
+        };
+        window.requestAnimationFrame(poll);
+        return;
       }
+    } catch (e) {
+      console.error('Error while waiting for __ucCmp readiness:', e);
     }
 
     window.addEventListener('UC_UI_INITIALIZED', function (e) {
@@ -65,14 +77,6 @@ class UcBridge {
         return false;
       }
     }
-    // Fallback to Usercentrics (v3 SDK global) readiness if available
-    if (window.Usercentrics && typeof window.Usercentrics.isInitialized === 'function') {
-      try {
-        return window.Usercentrics.isInitialized();
-      } catch (e) {
-        return false;
-      }
-    }
     // Legacy UC v2 UI readiness
     return !!(window.UC_UI && typeof window.UC_UI.isInitialized === 'function' && window.UC_UI.isInitialized());
   }
@@ -87,18 +91,39 @@ class UcBridge {
     if (!this.isCmpReady()) {
       throw new Error('Usercentrics CMP is not ready!');
     }
-    if (window.Usercentrics) {
-      if (typeof window.Usercentrics.acceptService === 'function') {
-        window.Usercentrics.acceptService(ucId);
-      } else if (typeof window.Usercentrics.updateServiceConsent === 'function') {
-        window.Usercentrics.updateServiceConsent({ id: ucId, status: true });
-      } else {
-        throw new Error('Usercentrics v3 API missing consent method');
+
+    // Prefer UC v3 (__ucCmp) API if available
+    if (window.__ucCmp) {
+      try {
+        // New recommended approach: batch update services consents and then save
+        const serviceConsents = [{id: ucId, consent: true}];
+
+        if (typeof window.__ucCmp.updateServicesConsents === 'function') {
+          const maybePromise = window.__ucCmp.updateServicesConsents(serviceConsents);
+
+          // If it returns a promise, wait and then save
+          if (maybePromise && typeof maybePromise.then === 'function') {
+            return maybePromise.then(() => {
+              if (typeof window.__ucCmp.saveConsents === 'function') {
+                return window.__ucCmp.saveConsents();
+              }
+            });
+          } else {
+            if (typeof window.__ucCmp.saveConsents === 'function') {
+              window.__ucCmp.saveConsents();
+            }
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Error while setting consent via __ucCmp:', e);
       }
-      return;
     }
 
-    window.UC_UI.acceptService(ucId);
+    // Legacy v2 fallback
+    if (window.UC_UI && typeof window.UC_UI.acceptService === 'function') {
+      window.UC_UI.acceptService(ucId);
+    }
   }
 
   /**
@@ -115,23 +140,29 @@ class UcBridge {
         const p = window.__ucCmp.getConsentDetails();
         return p.then((details) => {
           if (!details) return false;
-          // If overall consent status is ALL_ACCEPTED, treat service as consented
-          if (details.consent && details.consent.status === 'ALL_ACCEPTED') {
-            return true;
-          }
-          // Prefer v3 global consent list: if serviceIds contains ucId, it's active
-          if (details.consent && Array.isArray(details.consent.serviceIds)) {
-            if (details.consent.serviceIds.includes(ucId)) {
-              return true;
+          // First check explicit services map/object for the service and require consent.given === true if present
+          if (details.services) {
+            const svc = Array.isArray(details.services)
+              ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
+              : details.services[ucId] || details.services[String(ucId)] || null;
+            if (svc) {
+              const given = (svc.consent && typeof svc.consent.given !== 'undefined')
+                ? !!svc.consent.given
+                : (typeof svc.consent?.status !== 'undefined')
+                  ? !!svc.consent.status
+                  : (typeof svc.status !== 'undefined')
+                    ? !!svc.status
+                    : false;
+              return given === true;
             }
           }
-          // Fallback to services collection if available
-          if (!details.services) return false;
-          const svc = Array.isArray(details.services)
-            ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
-            : details.services[ucId] || details.services[String(ucId)] || null;
 
-          return svc ? !!(svc.consent?.status ?? svc.status) : false;
+          // Then additionally require that the global consent serviceIds includes ucId
+          if (details.consent && Array.isArray(details.consent.serviceIds)) {
+            return details.consent.serviceIds.includes(ucId);
+          }
+
+          return false;
         });
       }
 
