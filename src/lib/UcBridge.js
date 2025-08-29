@@ -96,17 +96,9 @@ class UcBridge {
     if (window.__ucCmp) {
       try {
         // New recommended approach: batch update services consents and then save
-        const serviceConsents = [{ id: ucId, consent: true }];
-
-        if (typeof window.__ucCmp.updateServicesConsents === 'function') {
-          const maybePromise = window.__ucCmp.updateServicesConsents(serviceConsents);
-
-          // If it returns a promise, wait and then save
-          if (maybePromise && typeof maybePromise.then === 'function') {
-            return maybePromise.then(() => {
-              if (typeof window.__ucCmp.saveConsents === 'function') {
-                return window.__ucCmp.saveConsents();
               }
+            }).catch((e) => {
+              console.error('Error while setting consent via __ucCmp promise chain:', e);
             });
           } else {
             if (typeof window.__ucCmp.saveConsents === 'function') {
