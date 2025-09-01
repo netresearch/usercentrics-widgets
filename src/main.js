@@ -38,8 +38,10 @@ async function loadConfigIfNeeded () {
  */
 function isSafeScriptUrl(url) {
   try {
+    // Trim leading/trailing whitespace, including Unicode whitespace
+    url = url.trim();
     // Disallow javascript: and data: and vbscript: schemes.
-    const prohibited = /^(?:\s*javascript:|\s*data:|\s*vbscript:)/i;
+    const prohibited = /^(?:javascript:|data:|vbscript:)/i;
     if (prohibited.test(url)) return false;
     // Try parsing the URL to allow only same-origin or relative URLs.
     const parsed = new URL(url, window.location.origin);
