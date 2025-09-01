@@ -1,6 +1,6 @@
 {
   "name": "@netresearch/usercentrics-widgets",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Lightweight placeholders compatible with Usercentrics CMP",
   "browser": "./dist/ucw.js",
   "files": [
