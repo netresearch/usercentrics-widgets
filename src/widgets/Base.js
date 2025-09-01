@@ -28,15 +28,6 @@ if (isGerman) {
  * Base widget class
  */
 class Base {
-  // Determine if current page language is German in a safe way
-  isGerman () {
-    try {
-      const l = (document && document.documentElement && document.documentElement.lang) ? document.documentElement.lang : '';
-      return l === 'de-DE' || l === 'de' || l === 'DE';
-    } catch (e) {
-      return false;
-    }
-  }
   /**
    * Base constructor for all widgets
    *
