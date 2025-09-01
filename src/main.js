@@ -36,7 +36,7 @@ async function loadConfigIfNeeded () {
  * Checks whether a script URL is safe to load.
  * Allows only same-origin relative or absolute URLs, and blocks javascript:, data:, etc.
  */
-function isSafeScriptUrl(url) {
+function isSafeScriptUrl (url) {
   try {
     // Trim leading/trailing whitespace, including Unicode whitespace
     url = url.trim();
@@ -45,6 +45,7 @@ function isSafeScriptUrl(url) {
     if (prohibited.test(url)) return false;
     // Try parsing the URL to allow only same-origin or relative URLs.
     const parsed = new URL(url, window.location.origin);
+    const extMatch = parsed.pathname.match(/\.([a-z0-9]+)$/i);
     if (parsed.origin !== window.location.origin) return false;
     // Additional restrictions can be added here, e.g. whitelist paths, etc.
     // Allow only .js files (optional safety, case-insensitive, strict).
