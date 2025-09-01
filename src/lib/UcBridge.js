@@ -96,8 +96,8 @@ class UcBridge {
     if (window.__ucCmp) {
       try {
         // New recommended approach: batch update services consents and then save
-        if (typeof window.__ucCmp.updateServicesConsent === 'function') {
-          window.__ucCmp.updateServicesConsent([{ id: ucId, consent: true }])
+        if (typeof window.__ucCmp.updateServicesConsents === 'function') {
+          window.__ucCmp.updateServicesConsents([{ id: ucId, consent: true }])
             .then(() => {
               if (typeof window.__ucCmp.saveConsents === 'function') {
                 window.__ucCmp.saveConsents();
