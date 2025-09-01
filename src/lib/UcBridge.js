@@ -96,16 +96,21 @@ class UcBridge {
     if (window.__ucCmp) {
       try {
         // New recommended approach: batch update services consents and then save
+        if (typeof window.__ucCmp.updateServicesConsent === 'function') {
+          window.__ucCmp.updateServicesConsent([{ id: ucId, consent: true }])
+            .then(() => {
+              if (typeof window.__ucCmp.saveConsents === 'function') {
+                window.__ucCmp.saveConsents();
               }
             }).catch((e) => {
               console.error('Error while setting consent via __ucCmp promise chain:', e);
             });
-          } else {
-            if (typeof window.__ucCmp.saveConsents === 'function') {
-              window.__ucCmp.saveConsents();
-            }
-            return;
+          return;
+        } else {
+          if (typeof window.__ucCmp.saveConsents === 'function') {
+            window.__ucCmp.saveConsents();
           }
+          return;
         }
       } catch (e) {
         console.error('Error while setting consent via __ucCmp:', e);
