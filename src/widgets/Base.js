@@ -84,7 +84,7 @@ class Base {
     const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
     // Resolve i18n config for current language if provided
     const i18n = cfg && cfg.i18n ? cfg.i18n : null;
-    const langCfg = i18n ? (this.isGerman() ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
+    const langCfg = i18n ? (isGerman ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
     // If a full HTML text is provided on language or root level, use it as-is
     if (langCfg && typeof langCfg.textHtml === 'string' && langCfg.textHtml.length > 0) {
       return langCfg.textHtml;
@@ -117,7 +117,7 @@ class Base {
     }
     const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
     const i18n = cfg && cfg.i18n ? cfg.i18n : null;
-    const langCfg = i18n ? (this.isGerman() ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
+    const langCfg = i18n ? (isGerman ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
     if (langCfg && typeof langCfg.acceptLabel === 'string' && langCfg.acceptLabel.length > 0) {
       return langCfg.acceptLabel;
     }
@@ -134,7 +134,7 @@ class Base {
   getAcceptLabelClass () {
     const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
     const i18n = cfg && cfg.i18n ? cfg.i18n : null;
-    const langCfg = i18n ? (this.isGerman() ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
+    const langCfg = i18n ? (isGerman ? (i18n.de || i18n.DE) : (i18n.en || i18n.EN)) : null;
 
     if (langCfg && typeof langCfg.acceptLabelClass === 'string' && langCfg.acceptLabelClass.length > 0) {
       return langCfg.acceptLabelClass;
