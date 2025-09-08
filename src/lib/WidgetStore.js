@@ -8,16 +8,6 @@ class WidgetStore {
     this.store = {};
     this.activatedServices = new Set(); // Track which services have been activated
     this.isListening = false;
-    this.debug = window.location.search.includes('ucw-debug') || false;
-  }
-
-  /**
-   * Log debug messages
-   */
-  log(...args) {
-    if (this.debug) {
-      console.log('[UCW-WidgetStore]', ...args);
-    }
   }
 
   /**
@@ -31,8 +21,6 @@ class WidgetStore {
       this.store[ucId] = [];
     }
     this.store[ucId].push(widget);
-    
-    this.log(`Registered widget for service ${ucId}`);
     
     // Check if this service already has consent and activate immediately
     this.checkAndActivateService(ucId);
@@ -57,14 +45,11 @@ class WidgetStore {
         const consent = await cmp.getConsent(ucId);
         const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
         
-        this.log(`Service ${ucId} consent check:`, hasConsent);
-        
         if (hasConsent) {
-          this.log(`Immediate activation for service ${ucId} - consent already granted`);
           this.activate(ucId);
         }
       } catch (error) {
-        this.log(`Error checking consent for ${ucId}:`, error);
+        // Silently ignore errors
       }
     });
   }
@@ -106,15 +91,12 @@ class WidgetStore {
   activate (ucId) {
     // Prevent double activation
     if (this.activatedServices.has(ucId)) {
-      this.log(`Service ${ucId} already activated, skipping`);
       return;
     }
 
     const widgets = this.store[ucId];
 
     if (widgets && widgets.length > 0) {
-      this.log(`Activating ${widgets.length} widget(s) for service ${ucId}`);
-      
       for (let i = 0; i < widgets.length; i++) {
         widgets[i] && widgets[i].activate(false);
       }
@@ -142,11 +124,10 @@ class WidgetStore {
         const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
         
         if (hasConsent) {
-          this.log(`Activating service ${ucId} after consent change`);
           this.activate(ucId);
         }
       } catch (error) {
-        this.log(`Error checking consent for ${ucId}:`, error);
+        // Silently ignore errors
       }
     }
   }
@@ -158,34 +139,27 @@ class WidgetStore {
     if (this.isListening) return;
     this.isListening = true;
 
-    const cmp = new UcBridge();
-    
-    this.log('Setting up enhanced consent listeners');
-
     // Enhanced V3 event handling
     if (window.__ucCmp && typeof window.__ucCmp.addEventListener === 'function') {
       try {
         // Listen for consent changed events
         window.__ucCmp.addEventListener('consentChanged', (event) => {
-          this.log('V3 consentChanged event received', event);
           setTimeout(() => this.checkAllServicesConsent(), 100);
         });
 
         // Listen for consent saved events
         window.__ucCmp.addEventListener('consentSaved', (event) => {
-          this.log('V3 consentSaved event received', event);
           setTimeout(() => this.checkAllServicesConsent(), 100);
         });
 
         // Listen for UI interactions
         window.__ucCmp.addEventListener('uiChanged', (event) => {
-          this.log('V3 uiChanged event received', event);
           if (event && event.action === 'acceptAll') {
             setTimeout(() => this.checkAllServicesConsent(), 100);
           }
         });
       } catch (e) {
-        this.log('Error setting up V3 listeners:', e);
+        // Silently ignore errors
       }
     }
 
@@ -193,19 +167,16 @@ class WidgetStore {
     if (window.UC_UI) {
       // Listen for accept all
       window.addEventListener('UC_UI_ACCEPT_ALL', () => {
-        this.log('V2 accept all event received');
         setTimeout(() => this.checkAllServicesConsent(), 100);
       });
 
       // Listen for save settings
       window.addEventListener('UC_UI_SAVE_SETTINGS', () => {
-        this.log('V2 save settings event received');
         setTimeout(() => this.checkAllServicesConsent(), 100);
       });
 
       // Listen for reject all
       window.addEventListener('UC_UI_REJECT_ALL', () => {
-        this.log('V2 reject all event received');
         // Could implement de-activation here if needed
       });
     }
@@ -213,8 +184,6 @@ class WidgetStore {
     // Existing view change handler with improvements
     window.addEventListener('UC_UI_VIEW_CHANGED', (e) => {
       if (e.detail) {
-        this.log('V2 view changed', e.detail);
-        
         // Check consent after dialog interactions
         if (e.detail.previousView && 
             e.detail.previousView !== 'NONE' && 
@@ -233,22 +202,18 @@ class WidgetStore {
   linkCmp () {
     const cmp = new UcBridge();
 
-    this.log('Linking CMP to widget store');
-
     // Setup enhanced listeners
     this.setupEnhancedListeners();
 
     // wait for the initial CMP consent
     for (const ucId of Object.keys(this.store)) {
       cmp.waitForCmpConsent(ucId, () => {
-        this.log(`Initial consent detected for ${ucId}`);
         this.activate(ucId);
       });
     }
 
     // Also do an immediate check when CMP is ready
     cmp.waitForCmp(() => {
-      this.log('CMP ready, performing initial consent check');
       setTimeout(() => this.checkAllServicesConsent(), 500);
     });
 
@@ -262,7 +227,6 @@ class WidgetStore {
       for (const ucId of Object.keys(this.store)) {
         if (!this.activatedServices.has(ucId)) {
           cmp.waitForCmpConsent(ucId, () => {
-            this.log(`Consent detected for ${ucId} after view change`);
             this.activate(ucId);
           });
         }
@@ -273,11 +237,9 @@ class WidgetStore {
     try {
       if (window.__ucCmp && typeof window.__ucCmp.addEventListener === 'function') {
         window.__ucCmp.addEventListener('consentChanged', () => {
-          this.log('V3 consent changed, rechecking all services');
           for (const ucId of Object.keys(this.store)) {
             if (!this.activatedServices.has(ucId)) {
               cmp.waitForCmpConsent(ucId, () => {
-                this.log(`Consent detected for ${ucId} after V3 consent change`);
                 this.activate(ucId);
               });
             }

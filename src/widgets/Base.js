@@ -47,12 +47,6 @@ class Base {
     this.isActivated = false;
     
     /**
-     * Debug mode
-     * @type {boolean}
-     */
-    this.debug = window.location.search.includes('ucw-debug') || false;
-    
-    /**
      * Widget configuration
      * @type {{}
      */
@@ -81,15 +75,6 @@ class Base {
        */
       accept: this.el.getAttribute('data-accept')
     };
-  }
-
-  /**
-   * Log debug messages
-   */
-  log(...args) {
-    if (this.debug) {
-      console.log(`[UCW-Widget-${this.cfg.ucId}]`, ...args);
-    }
   }
 
   /**
@@ -204,14 +189,11 @@ class Base {
   activate (fromWidget) {
     // Prevent double activation
     if (this.isActivated) {
-      this.log('Widget already activated, skipping');
       return;
     }
     
     this.isActivated = true;
     const ucId = this.cfg.ucId;
-    
-    this.log('Activating widget');
 
     widgetStore.unregister(ucId, this);
     widgetStore.activate(ucId);
@@ -232,8 +214,6 @@ class Base {
    */
   performActivation() {
     if (!this.container) return;
-    
-    this.log('Performing widget activation - replacing with original content');
     
     // Store reference to container before replacement
     const containerToReplace = this.container;
@@ -270,10 +250,7 @@ class Base {
         const consent = await cmp.getConsent(this.cfg.ucId);
         const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
         
-        this.log('Initial consent check:', hasConsent);
-        
         if (hasConsent && this.container && !this.isActivated) {
-          this.log('Consent already granted, auto-activating');
           // Trigger click on accept button to activate properly
           const acceptButton = this.container.querySelector('.uc-widget-accept');
           if (acceptButton) {
@@ -284,7 +261,7 @@ class Base {
           }
         }
       } catch (error) {
-        this.log('Error checking initial consent:', error);
+        // Silently ignore errors
       }
     });
   }
@@ -310,7 +287,6 @@ class Base {
     container
       .getElementsByClassName('uc-widget-accept')[0]
       .addEventListener('click', () => {
-        this.log('Accept button clicked');
         this.activate(true);
       });
 
