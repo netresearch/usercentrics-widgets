@@ -25,7 +25,7 @@ if (isGerman) {
 }
 
 /**
- * Base widget class
+ * Base widget class with enhanced consent detection
  */
 class Base {
   /**
@@ -39,9 +39,22 @@ class Base {
      * @type {Element}
      */
     this.el = el;
+    
+    /**
+     * Track if widget is activated
+     * @type {boolean}
+     */
+    this.isActivated = false;
+    
+    /**
+     * Debug mode
+     * @type {boolean}
+     */
+    this.debug = window.location.search.includes('ucw-debug') || false;
+    
     /**
      * Widget configuration
-     * @type {{}}
+     * @type {{}
      */
     this.cfg = {
       /**
@@ -68,6 +81,15 @@ class Base {
        */
       accept: this.el.getAttribute('data-accept')
     };
+  }
+
+  /**
+   * Log debug messages
+   */
+  log(...args) {
+    if (this.debug) {
+      console.log(`[UCW-Widget-${this.cfg.ucId}]`, ...args);
+    }
   }
 
   /**
@@ -180,7 +202,16 @@ class Base {
    * @param {boolean} fromWidget Indicates if the activation happened from the current Widget
    */
   activate (fromWidget) {
+    // Prevent double activation
+    if (this.isActivated) {
+      this.log('Widget already activated, skipping');
+      return;
+    }
+    
+    this.isActivated = true;
     const ucId = this.cfg.ucId;
+    
+    this.log('Activating widget');
 
     widgetStore.unregister(ucId, this);
     widgetStore.activate(ucId);
@@ -189,6 +220,73 @@ class Base {
       const cmp = new UcBridge();
       cmp.setConsent(ucId);
     }
+    
+    // If we have a container, perform the actual replacement
+    if (this.container) {
+      this.performActivation();
+    }
+  }
+  
+  /**
+   * Perform the actual widget activation and content replacement
+   */
+  performActivation() {
+    if (!this.container) return;
+    
+    this.log('Performing widget activation - replacing with original content');
+    
+    // Store reference to container before replacement
+    const containerToReplace = this.container;
+    
+    // Replace the container with the original element
+    if (this.el && containerToReplace && containerToReplace.parentNode) {
+      containerToReplace.replaceWith(this.el);
+      
+      // Clean up reference
+      this.container = null;
+      
+      // Trigger any load events or scripts that might be needed
+      if (this.el.tagName === 'IFRAME' && this.el.hasAttribute('data-uc-src')) {
+        this.el.src = this.el.getAttribute('data-uc-src');
+      }
+      
+      // Dispatch a custom event to signal activation
+      this.el.dispatchEvent(new CustomEvent('ucw:activated', { 
+        detail: { ucId: this.cfg.ucId },
+        bubbles: true 
+      }));
+    }
+  }
+
+  /**
+   * Check if consent is already granted and auto-activate
+   */
+  async checkInitialConsent() {
+    const cmp = new UcBridge();
+    
+    // Wait for CMP to be ready
+    cmp.waitForCmp(async () => {
+      try {
+        const consent = await cmp.getConsent(this.cfg.ucId);
+        const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
+        
+        this.log('Initial consent check:', hasConsent);
+        
+        if (hasConsent && this.container && !this.isActivated) {
+          this.log('Consent already granted, auto-activating');
+          // Trigger click on accept button to activate properly
+          const acceptButton = this.container.querySelector('.uc-widget-accept');
+          if (acceptButton) {
+            acceptButton.click();
+          } else {
+            // Fallback: activate directly
+            this.activate(false);
+          }
+        }
+      } catch (error) {
+        this.log('Error checking initial consent:', error);
+      }
+    });
   }
 
   /**
@@ -202,16 +300,26 @@ class Base {
     container.setAttribute('class', 'uc-widget-container');
     container.setAttribute('width', `${Math.floor(nodeWith)}px`);
     container.setAttribute('height', `${Math.floor(nodeHeight)}px`);
+    
+    // Store the UC ID on the container for easier identification
+    container.setAttribute('data-uc-id', this.cfg.ucId);
+    container.setAttribute('data-uc-name', this.cfg.ucName || '');
 
     this.el.replaceWith(container);
 
     container
       .getElementsByClassName('uc-widget-accept')[0]
-      .addEventListener('click', this.activate.bind(this, true));
+      .addEventListener('click', () => {
+        this.log('Accept button clicked');
+        this.activate(true);
+      });
 
     this.container = container;
 
     widgetStore.register(this.cfg.ucId, this);
+    
+    // Check if consent is already granted
+    this.checkInitialConsent();
   }
 }
 
