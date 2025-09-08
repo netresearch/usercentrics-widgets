@@ -48,7 +48,7 @@ class Base {
     
     /**
      * Widget configuration
-     * @type {{}
+     * @type {{}}
      */
     this.cfg = {
       /**
