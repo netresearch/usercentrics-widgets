@@ -25,7 +25,7 @@ Usercentrics v3 Browser API.
    1. Include in package.json
       ```
       "devDependencies": {
-           "@netresearch/usercentrics-widgets": "^1.0.7"
+           "@netresearch/usercentrics-widgets": "^2.0.0"
       },
       ```        
       or

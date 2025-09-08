@@ -4,6 +4,8 @@
  * retrieve consent, and set consent for specific services.
  */
 class UcBridge {
+
+
   /**
    * Waits for the Usercentrics CMP (v2 or v3) to be ready and executes the provided callback.
    *
