@@ -21,30 +21,30 @@ class WidgetStore {
       this.store[ucId] = [];
     }
     this.store[ucId].push(widget);
-    
+
     // Check if this service already has consent and activate immediately
     this.checkAndActivateService(ucId);
   }
 
   /**
    * Check if a service has consent and activate if it does
-   * 
+   *
    * @param {string} ucId Usercentrics Service ID
    */
-  async checkAndActivateService(ucId) {
+  async checkAndActivateService (ucId) {
     // Skip if already activated
     if (this.activatedServices.has(ucId)) {
       return;
     }
 
     const cmp = new UcBridge();
-    
+
     // Wait for CMP to be ready
     cmp.waitForCmp(async () => {
       try {
         const consent = await cmp.getConsent(ucId);
         const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
-        
+
         if (hasConsent) {
           this.activate(ucId);
         }
@@ -100,7 +100,7 @@ class WidgetStore {
       for (let i = 0; i < widgets.length; i++) {
         widgets[i] && widgets[i].activate(false);
       }
-      
+
       this.activatedServices.add(ucId);
     }
 
@@ -110,19 +110,19 @@ class WidgetStore {
   /**
    * Check all registered services for consent and activate if granted
    */
-  async checkAllServicesConsent() {
+  async checkAllServicesConsent () {
     const cmp = new UcBridge();
-    
+
     for (const ucId of Object.keys(this.store)) {
       // Skip if already activated
       if (this.activatedServices.has(ucId)) {
         continue;
       }
-      
+
       try {
         const consent = await cmp.getConsent(ucId);
         const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
-        
+
         if (hasConsent) {
           this.activate(ucId);
         }
@@ -135,7 +135,7 @@ class WidgetStore {
   /**
    * Setup enhanced event listeners for real-time consent changes
    */
-  setupEnhancedListeners() {
+  setupEnhancedListeners () {
     if (this.isListening) return;
     this.isListening = true;
 
@@ -185,8 +185,8 @@ class WidgetStore {
     window.addEventListener('UC_UI_VIEW_CHANGED', (e) => {
       if (e.detail) {
         // Check consent after dialog interactions
-        if (e.detail.previousView && 
-            e.detail.previousView !== 'NONE' && 
+        if (e.detail.previousView &&
+            e.detail.previousView !== 'NONE' &&
             e.detail.previousView !== 'PRIVACY_BUTTON' &&
             (e.detail.view === 'NONE' || e.detail.view === 'PRIVACY_BUTTON')) {
           // Dialog was closed, check for consent changes
@@ -222,7 +222,7 @@ class WidgetStore {
       if (e.detail && (e.detail.previousView === 'NONE' || e.detail.previousView === 'PRIVACY_BUTTON')) {
         return;
       }
-      
+
       // Recheck all services after view change
       for (const ucId of Object.keys(this.store)) {
         if (!this.activatedServices.has(ucId)) {

@@ -39,13 +39,13 @@ class Base {
      * @type {Element}
      */
     this.el = el;
-    
+
     /**
      * Track if widget is activated
      * @type {boolean}
      */
     this.isActivated = false;
-    
+
     /**
      * Widget configuration
      * @type {{}}
@@ -191,7 +191,7 @@ class Base {
     if (this.isActivated) {
       return;
     }
-    
+
     this.isActivated = true;
     const ucId = this.cfg.ucId;
 
@@ -202,38 +202,38 @@ class Base {
       const cmp = new UcBridge();
       cmp.setConsent(ucId);
     }
-    
+
     // If we have a container, perform the actual replacement
     if (this.container) {
       this.performActivation();
     }
   }
-  
+
   /**
    * Perform the actual widget activation and content replacement
    */
-  performActivation() {
+  performActivation () {
     if (!this.container) return;
-    
+
     // Store reference to container before replacement
     const containerToReplace = this.container;
-    
+
     // Replace the container with the original element
     if (this.el && containerToReplace && containerToReplace.parentNode) {
       containerToReplace.replaceWith(this.el);
-      
+
       // Clean up reference
       this.container = null;
-      
+
       // Trigger any load events or scripts that might be needed
       if (this.el.tagName === 'IFRAME' && this.el.hasAttribute('data-uc-src')) {
         this.el.src = this.el.getAttribute('data-uc-src');
       }
-      
+
       // Dispatch a custom event to signal activation
-      this.el.dispatchEvent(new CustomEvent('ucw:activated', { 
+      this.el.dispatchEvent(new CustomEvent('ucw:activated', {
         detail: { ucId: this.cfg.ucId },
-        bubbles: true 
+        bubbles: true
       }));
     }
   }
@@ -241,9 +241,9 @@ class Base {
   /**
    * Check if consent is already granted and auto-activate
    */
-  async checkInitialConsent() {
+  async checkInitialConsent () {
     const cmp = new UcBridge();
-    
+
     // Wait for CMP to be ready
     cmp.waitForCmp(async () => {
       try {
@@ -260,7 +260,7 @@ class Base {
         } else if (consent) {
           hasConsent = Boolean(consent);
         }
-        
+
         if (hasConsent && this.container && !this.isActivated) {
           // Trigger click on accept button to activate properly
           const acceptButton = this.container.querySelector('.uc-widget-accept');
@@ -288,7 +288,7 @@ class Base {
     container.setAttribute('class', 'uc-widget-container');
     container.setAttribute('width', `${Math.floor(nodeWith)}px`);
     container.setAttribute('height', `${Math.floor(nodeHeight)}px`);
-    
+
     // Store the UC ID on the container for easier identification
     container.setAttribute('data-uc-id', this.cfg.ucId);
     container.setAttribute('data-uc-name', this.cfg.ucName || '');
@@ -304,7 +304,7 @@ class Base {
     this.container = container;
 
     widgetStore.register(this.cfg.ucId, this);
-    
+
     // Check if consent is already granted
     this.checkInitialConsent();
   }
