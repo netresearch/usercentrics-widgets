@@ -97,8 +97,20 @@ class WidgetStore {
     const widgets = this.store[ucId];
 
     if (widgets && widgets.length > 0) {
-      for (let i = 0; i < widgets.length; i++) {
-        widgets[i] && widgets[i].activate(false);
+      // Create a copy of the widgets array to avoid mutation issues during iteration
+      // When widgets[i].activate() is called, it internally calls unregister() which
+      // modifies the original array. Without copying, some widgets would be skipped.
+      const widgetsCopy = [...widgets];
+      
+      for (let i = 0; i < widgetsCopy.length; i++) {
+        if (widgetsCopy[i]) {
+          try {
+            widgetsCopy[i].activate(false);
+          } catch (e) {
+            // Log error but continue to activate other widgets
+            console.error('[Usercentrics Widgets] Failed to activate widget:', e);
+          }
+        }
       }
 
       this.activatedServices.add(ucId);
