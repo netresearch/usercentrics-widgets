@@ -101,7 +101,7 @@ class WidgetStore {
       // When widgets[i].activate() is called, it internally calls unregister() which
       // modifies the original array. Without copying, some widgets would be skipped.
       const widgetsCopy = [...widgets];
-      
+
       for (let i = 0; i < widgetsCopy.length; i++) {
         if (widgetsCopy[i]) {
           try {
