@@ -19,8 +19,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr review --approve "$PR_URL"
 
-      - name: Enable auto-merge
+      - name: Merge PR
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge --auto --rebase "$PR_URL"
+        run: gh pr merge --rebase "$PR_URL"
