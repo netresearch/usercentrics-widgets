@@ -59,5 +59,8 @@
   ],
   "dependencies": {
     "@rollup/plugin-terser": "^0.4.4"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.0.3"
   }
 }
