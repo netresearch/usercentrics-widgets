@@ -9,9 +9,8 @@ async function loadConfigIfNeeded () {
     if (!scriptEl) {
       return;
     }
-    const cfgPath = scriptEl.getAttribute('data-config');
-    if (!cfgPath || !isSafeScriptUrl(cfgPath)) {
-      // Optionally: console.warn('Unsafe or missing config script source:', cfgPath);
+    const safeUrl = sanitizeScriptUrl(scriptEl.getAttribute('data-config'));
+    if (!safeUrl) {
       return;
     }
     // Prevent double loading
@@ -21,7 +20,7 @@ async function loadConfigIfNeeded () {
     }
     window.__UCW_CFG_LOADING__ = new Promise((resolve) => {
       const s = document.createElement('script');
-      s.src = cfgPath;
+      s.src = safeUrl;
       s.onload = () => resolve();
       s.onerror = () => resolve(); // continue without config if it fails
       document.head.appendChild(s);
@@ -33,27 +32,27 @@ async function loadConfigIfNeeded () {
 }
 
 /**
- * Checks whether a script URL is safe to load.
- * Allows only same-origin relative or absolute URLs, and blocks javascript:, data:, etc.
+ * Validates and sanitizes a script URL.
+ * Allows only same-origin .js/.mjs URLs and blocks javascript:, data:, etc.
+ * Returns the sanitized URL string from the URL constructor, or null if unsafe.
  */
-function isSafeScriptUrl (url) {
+function sanitizeScriptUrl (url) {
   try {
-    // Trim leading/trailing whitespace, including Unicode whitespace
+    if (!url) return null;
     url = url.trim();
     // Disallow javascript: and data: and vbscript: schemes.
     const prohibited = /^(?:javascript:|data:|vbscript:)/i;
-    if (prohibited.test(url)) return false;
-    // Try parsing the URL to allow only same-origin or relative URLs.
+    if (prohibited.test(url)) return null;
+    // Parse the URL — this normalizes the value and strips any embedded control characters.
     const parsed = new URL(url, window.location.origin);
+    if (parsed.origin !== window.location.origin) return null;
+    // Allow only .js/.mjs files.
     const extMatch = parsed.pathname.match(/\.([a-z0-9]+)$/i);
-    if (parsed.origin !== window.location.origin) return false;
-    // Additional restrictions can be added here, e.g. whitelist paths, etc.
-    // Allow only .js files (optional safety, case-insensitive, strict).
-    if (!extMatch || !['js', 'mjs'].includes(extMatch[1].toLowerCase())) return false;
-    return true;
+    if (!extMatch || !['js', 'mjs'].includes(extMatch[1].toLowerCase())) return null;
+    // Return the normalized href from the URL constructor (a new, clean string).
+    return parsed.href;
   } catch (e) {
-    // If URL constructor fails, treat as unsafe
-    return false;
+    return null;
   }
 }
 
