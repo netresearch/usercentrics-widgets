@@ -32,8 +32,8 @@
     "url": "https://github.com/netresearch/usercentrics-widgets.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.2",
-    "@babel/preset-env": "^7.23.2",
+    "@babel/core": "^8.0.0",
+    "@babel/preset-env": "^8.0.0",
     "@eslint/js": "^10.0.1",
     "@rollup/plugin-babel": "^7.0.0",
     "@rollup/plugin-strip": "^3.0.4",
