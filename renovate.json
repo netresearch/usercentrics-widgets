@@ -2,5 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "description": "Hold Babel on 7.x: @rollup/plugin-babel (latest 7.1.0) peer-requires @babel/core ^7, so a Babel 8 major breaks npm's audit resolution and the IE11 build.",
+      "matchPackageNames": ["@babel/core", "@babel/preset-env"],
+      "allowedVersions": "<8"
+    }
   ]
 }
