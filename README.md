@@ -77,8 +77,8 @@ Usercentrics v3 Browser API.
 ## Build changes locally
 1. the /dist/ folder contains the latest version of the library
 2. Changes can do in the /src/ folder
-3. Install the library via NPM with `npm install`
-4. Build the changes with `npm run build`
+3. Install the dependencies with `bun install`
+4. Build the changes with `bun run build`
 
 ## Supported technologies
 * all iframes

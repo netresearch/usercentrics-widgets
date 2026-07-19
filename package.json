@@ -10,7 +10,7 @@
   "scripts": {
     "watch": "./node_modules/.bin/rollup -c rollup.config.js --configDebug -w",
     "build:css": "./node_modules/.bin/cleancss -o ./dist/ucw.min.css ./style/ucw.css",
-    "build": "npm run build:css && ./node_modules/.bin/rollup -c rollup.config.js --bundleConfigAsCjs",
+    "build": "bun run build:css && ./node_modules/.bin/rollup -c rollup.config.js --bundleConfigAsCjs",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "test": "echo \"Error: no test specified\" && exit 1"
