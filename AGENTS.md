@@ -59,11 +59,11 @@ Optional `window.UCW_WIDGET_CONFIG` object with i18n support (`i18n.de`, `i18n.e
 ## Development
 
 ```bash
-npm ci                  # Install dependencies
-npm run build           # Build both bundles + minified CSS
-npm run lint            # Lint with semistandard
-npm run lint:fix        # Auto-fix lint issues
-npm run watch           # Dev mode with rollup watch (console.* preserved)
+bun install             # Install dependencies
+bun run build           # Build both bundles + minified CSS
+bun run lint            # Lint with semistandard
+bun run lint:fix        # Auto-fix lint issues
+bun run watch           # Dev mode with rollup watch (console.* preserved)
 ```
 
 - Linter: [semistandard](https://github.com/standard/semistandard) (standard + semicolons)
