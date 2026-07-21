@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions: {}
+
+jobs:
+  ci:
+    uses: netresearch/.github/.github/workflows/node-ci.yml@main
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      pull-requests: write
+    with:
+      package-manager: bun
+      install-cmd: bun install --frozen-lockfile
+      lint-cmd: bun run lint
+      build-cmd: bun run build
+      enable-type-check: false
+      enable-format-check: false
+      enable-test: false
+      enable-build: true
+      enable-gitleaks: false
+      audit-level: high
