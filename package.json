@@ -57,6 +57,7 @@
     "usercentrics"
   ],
   "overrides": {
-    "serialize-javascript": "^7.0.5"
+    "serialize-javascript": "^7.0.5",
+    "brace-expansion": "5.0.7"
   }
 }
