@@ -1,5 +1,16 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+# Publish @netresearch/usercentrics-widgets to npm when a GitHub Release is
+# created. Thin caller of the shared node-release reusable: build + npm
+# publish live in netresearch/.github, so the pinned action versions and the
+# publish logic are maintained centrally. Zero step-level `uses:`.
+#
+# This package authenticates with NPM_TOKEN (no Trusted Publisher configured),
+# so provenance is off and the token is forwarded explicitly. The Release
+# already exists (it is the trigger), so create-github-release stays off.
+#
+# Keep the filename npm-publish.yml. There is no Trusted Publisher today, so a
+# rename would not break publishing — but to move off the token later, create a
+# Trusted Publisher on npmjs.com bound to THIS filename, then set
+# provenance: true and drop the NPM_TOKEN secret.
 
 name: Node.js Package
 
@@ -10,30 +21,22 @@ on:
 permissions: {}
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  publish:
+    uses: netresearch/.github/.github/workflows/node-release.yml@main
     permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-      - run: bun install --frozen-lockfile
-      - run: bun run lint
-
-  publish-npm:
-    # needs: lint
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-          registry-url: https://registry.npmjs.org/
-      - run: bun install --frozen-lockfile
-      - run: bun run build
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      contents: write
+      id-token: write
+      packages: write
+    with:
+      package-manager: bun
+      node-version: '24'
+      install-cmd: bun install --frozen-lockfile
+      build-cmd: bun run build
+      version-source: manifest
+      publish-npm: true
+      npm-access: public
+      provenance: false
+      publish-github-packages: false
+      create-github-release: false
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
