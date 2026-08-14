@@ -10,17 +10,21 @@ class Iframe extends Base {
     const el = this.el;
     if (el) {
       const dataSrc = el.getAttribute('data-uc-src');
-      el.setAttribute('data-uc-src', null);
+      el.removeAttribute('data-uc-src');
 
       // for scripts
       if (el.hasAttribute('type')) {
         el.removeAttribute('type');
       }
 
-      this.container.parentElement.replaceChild(el, this.container);
-      window.setTimeout(() => {
-        el.setAttribute('src', dataSrc);
-      }, 0);
+      // Base.performActivation() has already put the element back into the
+      // document; it only assigns `src` for iframes, so do it for everything
+      // else here.
+      if (dataSrc && !el.src) {
+        window.setTimeout(() => {
+          el.setAttribute('src', dataSrc);
+        }, 0);
+      }
     }
   }
 }
