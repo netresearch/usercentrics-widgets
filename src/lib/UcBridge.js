@@ -166,12 +166,22 @@ class UcBridge {
       // UC v2: Retrieve consent using the legacy API.
       if (window.UC_UI && typeof window.UC_UI.getServicesBaseInfo === 'function') {
         const consents = window.UC_UI.getServicesBaseInfo();
-        for (let i = 0; i < consents.length; i++) {
-          if (consents[i].id === ucId) {
-            return !!(consents[i].consent && consents[i].consent.status);
+
+        const findConsent = (services) => {
+          for (let i = 0; i < services.length; i++) {
+            if (services[i].id === ucId) {
+              return !!(services[i].consent && services[i].consent.status);
+            }
           }
+          return false;
+        };
+
+        // Newer CMP builds resolve this asynchronously.
+        if (consents && typeof consents.then === 'function') {
+          return consents.then(findConsent);
         }
-        return false;
+
+        return findConsent(consents);
       }
 
       // Unknown environment.
