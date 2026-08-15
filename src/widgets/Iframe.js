@@ -13,14 +13,14 @@ class Iframe extends Base {
       el.removeAttribute('data-uc-src');
 
       // for scripts
-      if (el.hasAttribute('type')) {
+      if (el.tagName === 'SCRIPT' && el.hasAttribute('type')) {
         el.removeAttribute('type');
       }
 
       // Base.performActivation() has already put the element back into the
-      // document; it only assigns `src` for iframes, so do it for everything
+      // document and assigned `src` for iframes, so do it for everything
       // else here.
-      if (dataSrc && !el.src) {
+      if (dataSrc && el.tagName !== 'IFRAME') {
         window.setTimeout(() => {
           el.setAttribute('src', dataSrc);
         }, 0);
