@@ -168,6 +168,9 @@ class UcBridge {
         const consents = window.UC_UI.getServicesBaseInfo();
 
         const findConsent = (services) => {
+          if (!Array.isArray(services)) {
+            return false;
+          }
           for (let i = 0; i < services.length; i++) {
             if (services[i].id === ucId) {
               return !!(services[i].consent && services[i].consent.status);
@@ -176,9 +179,10 @@ class UcBridge {
           return false;
         };
 
-        // Newer CMP builds resolve this asynchronously.
+        // Newer CMP builds resolve this asynchronously. Keep the same "no
+        // consent on error" contract the synchronous path has.
         if (consents && typeof consents.then === 'function') {
-          return consents.then(findConsent);
+          return Promise.resolve(consents).then(findConsent).catch(() => false);
         }
 
         return findConsent(consents);
