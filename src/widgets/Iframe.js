@@ -1,32 +1,12 @@
 import Base from './Base';
 
 /**
- * Common class for all iframes
+ * Common class for all iframes, and the fallback for every other embed.
+ *
+ * Restoring the source is the same job for every tag, so `Base` does it in
+ * `restoreSource()` and there is nothing left to specialize here.
  */
 class Iframe extends Base {
-  activate (fromWidget) {
-    super.activate(fromWidget);
-
-    const el = this.el;
-    if (el) {
-      const dataSrc = el.getAttribute('data-uc-src');
-      el.removeAttribute('data-uc-src');
-
-      // for scripts
-      if (el.tagName === 'SCRIPT' && el.hasAttribute('type')) {
-        el.removeAttribute('type');
-      }
-
-      // Base.performActivation() has already put the element back into the
-      // document and assigned `src` for iframes, so do it for everything
-      // else here.
-      if (dataSrc && el.tagName !== 'IFRAME') {
-        window.setTimeout(() => {
-          el.setAttribute('src', dataSrc);
-        }, 0);
-      }
-    }
-  }
 }
 
 export default Iframe;
