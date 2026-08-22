@@ -218,24 +218,49 @@ class Base {
     // Store reference to container before replacement
     const containerToReplace = this.container;
 
-    // Replace the container with the original element
-    if (this.el && containerToReplace && containerToReplace.parentNode) {
-      containerToReplace.replaceWith(this.el);
-
-      // Clean up reference
-      this.container = null;
-
-      // Trigger any load events or scripts that might be needed
-      if (this.el.tagName === 'IFRAME' && this.el.hasAttribute('data-uc-src')) {
-        this.el.src = this.el.getAttribute('data-uc-src');
-      }
-
-      // Dispatch a custom event to signal activation
-      this.el.dispatchEvent(new CustomEvent('ucw:activated', {
-        detail: { ucId: this.cfg.ucId },
-        bubbles: true
-      }));
+    // The placeholder can be gone by now, e.g. because an SPA rerendered the
+    // page before consent was given. Say so and leave `data-uc-src` alone, so
+    // the embed stays recoverable instead of being dropped without a trace.
+    if (!this.el || !containerToReplace.parentNode) {
+      console.error('[Usercentrics Widgets] Cannot activate widget, its placeholder is no longer in the document:', this.cfg.ucId);
+      return;
     }
+
+    containerToReplace.replaceWith(this.el);
+
+    // Clean up reference
+    this.container = null;
+
+    // Trigger any load events or scripts that might be needed
+    this.restoreSource();
+
+    // Dispatch a custom event to signal activation
+    this.el.dispatchEvent(new CustomEvent('ucw:activated', {
+      detail: { ucId: this.cfg.ucId },
+      bubbles: true
+    }));
+  }
+
+  /**
+   * Give the element back the `src` the placeholder parked in `data-uc-src`.
+   *
+   * The element is back in the document at this point, so assigning `src` is
+   * what makes an iframe load and a script run. A blocking `type` such as
+   * `text/plain` has to go first, or the script stays inert.
+   */
+  restoreSource () {
+    const src = this.el.getAttribute('data-uc-src');
+
+    if (!src) return;
+
+    this.el.removeAttribute('data-uc-src');
+
+    // `tagName` keeps the source casing in XHTML documents, so normalize it.
+    if (this.el.tagName.toLowerCase() === 'script') {
+      this.el.removeAttribute('type');
+    }
+
+    this.el.setAttribute('src', src);
   }
 
   /**
