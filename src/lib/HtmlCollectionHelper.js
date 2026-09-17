@@ -1,5 +1,5 @@
 /**
- * Helper to convert a HTMLCollection to an immutable array
+ * Helper to convert a HTMLCollection to a plain array
  *
  * @param {HTMLCollection} collection
  */
