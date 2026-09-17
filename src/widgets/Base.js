@@ -25,6 +25,34 @@ if (isGerman) {
 }
 
 /**
+ * Escapes a value for interpolation into the placeholder markup.
+ *
+ * The placeholder is built as a string and assigned via `innerHTML`, so every
+ * value that is documented as plain text has to be escaped on the way in. That
+ * is all of the `data-*` attributes: they come from the page's markup, which in
+ * a CMS is frequently editorial or user-supplied content. An author who can set
+ * only an attribute would otherwise reach script execution.
+ *
+ * The quote characters matter as much as the angle brackets — two of these land
+ * inside quoted attribute values, where a bare `"` ends the attribute early.
+ *
+ * Values documented as HTML (`textHtml`, `textServicePrefix`, `textSuffixHtml`)
+ * come from the site's own config file, are HTML by design, and are not passed
+ * through here.
+ *
+ * @param {*} value
+ * @returns {string}
+ */
+function escapeHtml (value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Base widget class with enhanced consent detection
  */
 class Base {
@@ -83,9 +111,11 @@ class Base {
    * @returns {string}
    */
   getEmbeddingText () {
-    // If custom text is provided on the element, it takes precedence
+    // If custom text is provided on the element, it takes precedence. It comes
+    // from a `data-` attribute and is documented as text, so it is escaped;
+    // the config's `textHtml` below is the documented way to pass markup.
     if (this.cfg.text) {
-      return this.cfg.text;
+      return escapeHtml(this.cfg.text);
     }
     // Check global config injected via optional config JS
     const cfg = (typeof window !== 'undefined' && window.UCW_WIDGET_CONFIG) ? window.UCW_WIDGET_CONFIG : null;
@@ -110,7 +140,7 @@ class Base {
       : (cfg && typeof cfg.textSuffixHtml === 'string')
           ? cfg.textSuffixHtml
           : DEFAULT_WIDGET_TEXT;
-    return prefix + this.cfg.ucName + suffix;
+    return prefix + escapeHtml(this.cfg.ucName) + suffix;
   }
 
   /**
@@ -160,13 +190,15 @@ class Base {
   getEmbedding () {
     const extraClass = this.getAcceptLabelClass();
     const controlClass = extraClass && extraClass.trim().length > 0
-      ? `uc-widget-control ${extraClass.trim()}`
+      ? `uc-widget-control ${escapeHtml(extraClass.trim())}`
       : 'uc-widget-control';
+    // `getEmbeddingText()` returns markup by design and escapes its own
+    // untrusted parts; everything else here is text or an attribute value.
     return `\
-<img class="uc-widget-background" src="${this.getBackground()}" alt="Background Image" width="100%" height="100%"/>\
+<img class="uc-widget-background" src="${escapeHtml(this.getBackground())}" alt="Background Image" width="100%" height="100%"/>\
 <div class="uc-widget-embedding">\
   <div class="uc-widget-text">${this.getEmbeddingText()}</div>\
-  <div class="uc-widget-control"><button class="uc-widget-accept ${controlClass}">${this.getAcceptButtonLabel()}</button></div>\
+  <div class="uc-widget-control"><button class="uc-widget-accept ${controlClass}">${escapeHtml(this.getAcceptButtonLabel())}</button></div>\
 </div>\
 `;
   }
