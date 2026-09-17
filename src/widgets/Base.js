@@ -192,16 +192,24 @@ class Base {
       return;
     }
 
-    this.isActivated = true;
     const ucId = this.cfg.ucId;
 
-    widgetStore.unregister(ucId, this);
-    widgetStore.activate(ucId);
-
+    // Record the decision before anything is committed. `setConsent()` throws
+    // while the Usercentrics script is still loading, and the placeholder is
+    // clickable from `readyState === 'complete'`, so that window is reachable.
+    // Committing first left the widget flagged as activated, its siblings
+    // activated with no consent stored, and the throw escaping the click
+    // listener — after which a second click returned at the guard above and
+    // the embed never loaded.
     if (fromWidget) {
       const cmp = new UcBridge();
       cmp.setConsent(ucId);
     }
+
+    this.isActivated = true;
+
+    widgetStore.unregister(ucId, this);
+    widgetStore.activate(ucId);
 
     // If we have a container, perform the actual replacement
     if (this.container) {
@@ -293,14 +301,10 @@ class Base {
         const hasConsent = await cmp.getConsent(this.cfg.ucId);
 
         if (hasConsent && this.container && !this.isActivated) {
-          // Trigger click on accept button to activate properly
-          const acceptButton = this.container.querySelector('.uc-widget-accept');
-          if (acceptButton) {
-            acceptButton.click();
-          } else {
-            // Fallback: activate directly
-            this.activate(false);
-          }
+          // Activate directly. Synthesising a click on the accept button would
+          // route through `activate(true)` and write the consent we just read
+          // back to the CMP as a fresh user decision.
+          this.activate(false);
         }
       } catch (error) {
         // Silently ignore errors
