@@ -191,11 +191,16 @@ class UcBridge {
         throw new Error('Usercentrics CMP cannot record consent for a single service: __ucCmp.updateServicesConsents is missing');
       }
 
-      await window.__ucCmp.updateServicesConsents([{ id: ucId, consent: true }]);
-
-      if (typeof window.__ucCmp.saveConsents === 'function') {
-        await window.__ucCmp.saveConsents();
+      // Both halves are required, for the same reason. `updateServicesConsents`
+      // changes the in-memory state and `saveConsents` is what writes the
+      // decision, so treating the second as optional would resolve — and let
+      // the embed load — with nothing persisted.
+      if (typeof window.__ucCmp.saveConsents !== 'function') {
+        throw new Error('Usercentrics CMP cannot persist consent: __ucCmp.saveConsents is missing');
       }
+
+      await window.__ucCmp.updateServicesConsents([{ id: ucId, consent: true }]);
+      await window.__ucCmp.saveConsents();
 
       return;
     }

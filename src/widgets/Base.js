@@ -40,6 +40,10 @@ if (isGerman) {
  * come from the site's own config file, are HTML by design, and are not passed
  * through here.
  *
+ * Safe for element content and for QUOTED attribute values, which is every
+ * context this template uses. It is not sufficient for an unquoted attribute,
+ * nor for a URL scheme, script or style context.
+ *
  * @param {*} value
  * @returns {string}
  */
@@ -202,6 +206,11 @@ class Base {
       : 'uc-widget-control';
     // `getEmbeddingText()` returns markup by design and escapes its own
     // untrusted parts; everything else here is text or an attribute value.
+    //
+    // `getBackground()` is escaped HERE rather than inside itself, because
+    // `Youtube` overrides it and builds a URL out of `data-uc-src` with a
+    // parser that does not percent-encode. Escaping at the sink covers the
+    // override; escaping at the source would not have.
     return `\
 <img class="uc-widget-background" src="${escapeHtml(this.getBackground())}" alt="Background Image" width="100%" height="100%"/>\
 <div class="uc-widget-embedding">\
@@ -262,7 +271,10 @@ class Base {
         this.isRecordingConsent = false;
       }
 
-      // A store-driven activation can have landed while that was in flight.
+      // Defensive: nothing can set `isActivated` while the write is in
+      // flight, because the only writer is below and every entry to this
+      // method returns at the `isRecordingConsent` guard above. Kept so the
+      // invariant is checked rather than assumed.
       if (this.isActivated) {
         return;
       }

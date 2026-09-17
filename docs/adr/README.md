@@ -16,3 +16,4 @@ its file and gains a "Superseded by" line, so the reasoning stays readable.
 | [0004](0004-preserve-script-type-module.md) | Preserve `type="module"` on script embeds | Accepted |
 | [0005](0005-detached-placeholder-is-reported-not-recovered.md) | A detached placeholder is reported, not recovered | Accepted |
 | [0006](0006-no-test-runner.md) | No test runner | Accepted |
+| [0007](0007-consent-write-must-complete-before-activation.md) | The consent write must complete before activation | Accepted |
