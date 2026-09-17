@@ -13,8 +13,10 @@ and a promise from the v3 path, and only the v2 path mapped a failure to "no
 consent". A rejected v3 `getConsentDetails()` escaped as an unhandled rejection,
 because the surrounding `try`/`catch` traps synchronous throws only.
 
-Every call site had grown its own defence — four of them, each subtly different,
-each testing whether the value was thenable after having already awaited it.
+Every call site had grown its own defence — four of them, subtly different. Three
+tested whether the value was thenable after having already awaited it, which was
+dead; the fourth, `waitForCmpConsent`, did not await, so its thenable branch was
+the live v3 path.
 
 ## Decision
 

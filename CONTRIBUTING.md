@@ -15,7 +15,7 @@ Node 24 is what CI uses. `bun` is the package manager; do not add a second lockf
 
 ## There is no test suite
 
-`bun test` is a placeholder that exits with an error, and CI runs no tests. This is deliberate for now and recorded in [ADR 6](docs/adr/0006-no-test-runner.md), which also lists the properties that are unprotected as a result.
+`bun run test` is a placeholder script that exits with an error, and CI runs no tests. This is deliberate for now and recorded in [ADR 6](docs/adr/0006-no-test-runner.md), which also lists the properties that are unprotected as a result.
 
 That puts the burden on the change itself. If you touch activation, consent reading, or the order in which a script's `type` and `src` are set, say in the pull request how you established that it works — and prefer something reproducible over "tested locally". Building a throwaway probe against both the old and the new tree and comparing is the pattern used so far.
 

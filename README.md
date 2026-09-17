@@ -72,7 +72,7 @@ Usercentrics v3 Browser API.
 ## Pipeline on GitHub
 * The pipeline is based on [GitHub Actions](https://github.com/netresearch/usercentrics-widgets/actions)
 * It lints the sources, builds the `dist` folder with the JavaScript and CSS files, audits the dependencies and runs CodeQL
-* There is no test suite, so the pipeline runs none. `bun test` is a placeholder that exits with an error
+* There is no test suite, so the pipeline runs none. The `test` script is a placeholder that exits with an error
 
 ## Build changes locally
 1. `dist/` is build output. It is not committed — run `bun run build` to produce it. The published npm package ships it
@@ -170,5 +170,5 @@ Structure of the configuration (`window.UCW_WIDGET_CONFIG`):
 
 Notes:
 - Language is detected via the `lang` attribute on the `<html>` element. For German, `de-DE`, `de` or `DE` are supported; otherwise English is used.
-- A complete example is [`src/config/ucw.config.example.js`](/src/config/ucw.config.example.js) in this repository. The build copies it to `dist/ucw.config.js`.
+- A complete example is [`src/config/ucw.config.example.js`](src/config/ucw.config.example.js) in this repository. The build copies it to `dist/ucw.config.js`.
 - The `data-config` URL is validated before it is loaded: it must be same-origin and end in `.js` or `.mjs`. Anything else — a CDN URL, a `data:` URI — is rejected and no config is loaded. A load error is ignored silently, and the widgets fall back to their defaults.
