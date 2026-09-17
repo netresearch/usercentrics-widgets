@@ -243,22 +243,20 @@ class Base {
 
     const ucId = this.cfg.ucId;
 
-    // Hand the decision to the CMP before anything is committed. On the v2
-    // path that is the whole write; on the v3 path `setConsent()` only starts
-    // `updateServicesConsents()` and does not await it, so persistence may
-    // still be in flight — or have failed — once this returns. See #148.
+    // Hand the decision to the CMP and wait for it to be stored, before
+    // anything about this widget is committed. `setConsent()` resolves only
+    // once the CMP has accepted the update and persisted it.
     //
-    // `setConsent()` throws while the Usercentrics script is still loading,
-    // and the placeholder is clickable from `readyState === 'complete'`, so
-    // that window is reachable.
+    // It rejects while the Usercentrics script is still loading, and the
+    // placeholder is clickable from `readyState === 'complete'`, so that
+    // window is reachable — as is any other CMP failure.
     //
-    // The throw still escapes the click listener, deliberately — it is the only
-    // signal that the click did not take. What the order changes is that it now
-    // commits nothing on the way out: the widget is no longer left flagged as
+    // A rejection commits nothing on the way out: the widget is not flagged as
     // activated (so a second click retries instead of returning at the guard
-    // above), the siblings are no longer activated with no consent stored, and
-    // the service is no longer latched in `WidgetStore.activatedServices`, so a
-    // later genuine consent event can still activate it.
+    // above), the siblings are not activated with no consent stored, and the
+    // service is not latched in `WidgetStore.activatedServices`, so a later
+    // genuine consent event can still reach it. The click listener turns the
+    // rejection into a `ucw:activation-failed` event; see ADR 0007.
     if (fromWidget) {
       // Wait for the CMP to store the decision. If it fails, nothing is
       // committed and the embed does not load — a consent gate must not show
