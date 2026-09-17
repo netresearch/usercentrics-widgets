@@ -194,9 +194,14 @@ class Base {
 
     const ucId = this.cfg.ucId;
 
-    // Record the decision before anything is committed. `setConsent()` throws
-    // while the Usercentrics script is still loading, and the placeholder is
-    // clickable from `readyState === 'complete'`, so that window is reachable.
+    // Hand the decision to the CMP before anything is committed. On the v2
+    // path that is the whole write; on the v3 path `setConsent()` only starts
+    // `updateServicesConsents()` and does not await it, so persistence may
+    // still be in flight — or have failed — once this returns. See #148.
+    //
+    // `setConsent()` throws while the Usercentrics script is still loading,
+    // and the placeholder is clickable from `readyState === 'complete'`, so
+    // that window is reachable.
     //
     // The throw still escapes the click listener, deliberately — it is the only
     // signal that the click did not take. What the order changes is that it now
