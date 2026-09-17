@@ -50,9 +50,6 @@
   },
   "homepage": "https://github.com/netresearch/usercentrics-widgets#readme",
   "main": "rollup.config.js",
-  "directories": {
-    "example": "example"
-  },
   "keywords": [
     "usercentrics"
   ],

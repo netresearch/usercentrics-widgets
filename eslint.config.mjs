@@ -1,6 +1,11 @@
 import js from '@eslint/js';
 
 export default [
+  {
+    // Build output: generated bundles are not sources. Without this, running
+    // `bun run build` before `bun run lint` lints dist/ and fails.
+    ignores: ['dist/**']
+  },
   js.configs.recommended,
   {
     languageOptions: {
