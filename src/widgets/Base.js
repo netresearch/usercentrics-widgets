@@ -197,10 +197,14 @@ class Base {
     // Record the decision before anything is committed. `setConsent()` throws
     // while the Usercentrics script is still loading, and the placeholder is
     // clickable from `readyState === 'complete'`, so that window is reachable.
-    // Committing first left the widget flagged as activated, its siblings
-    // activated with no consent stored, and the throw escaping the click
-    // listener — after which a second click returned at the guard above and
-    // the embed never loaded.
+    //
+    // The throw still escapes the click listener, deliberately — it is the only
+    // signal that the click did not take. What the order changes is that it now
+    // commits nothing on the way out: the widget is no longer left flagged as
+    // activated (so a second click retries instead of returning at the guard
+    // above), the siblings are no longer activated with no consent stored, and
+    // the service is no longer latched in `WidgetStore.activatedServices`, so a
+    // later genuine consent event can still activate it.
     if (fromWidget) {
       const cmp = new UcBridge();
       cmp.setConsent(ucId);
