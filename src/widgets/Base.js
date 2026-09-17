@@ -222,9 +222,17 @@ class Base {
     // page before consent was given. There is nothing left to replace, and this
     // instance cannot bring the embed back: it has already been unregistered and
     // its service is marked active. Report it and leave `data-uc-src` in place,
-    // so the parked URL is at least not destroyed on the way out.
+    // so the parked URL is at least not destroyed on the way out. The build
+    // strips `console.*`, so the event is the half of this a production page
+    // can observe; it is dispatched on `document`, because `this.el` is
+    // detached and an event on it would reach no listener.
     if (!containerToReplace.parentNode) {
       console.error('[Usercentrics Widgets] Cannot activate widget, its placeholder is no longer in the document:', this.cfg.ucId);
+
+      document.dispatchEvent(new CustomEvent('ucw:activation-failed', {
+        detail: { ucId: this.cfg.ucId, reason: 'placeholder-detached' }
+      }));
+
       return;
     }
 
@@ -264,7 +272,7 @@ class Base {
       // Only the blocking placeholder type has to go. Dropping `module` too
       // would restore the embed as a classic script, which fails on the first
       // `import` — the default classic type needs no attribute either way.
-      if (type && type.toLowerCase() !== 'module') {
+      if (type && type.trim().toLowerCase() !== 'module') {
         this.el.removeAttribute('type');
       }
     }
