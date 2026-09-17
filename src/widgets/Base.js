@@ -219,9 +219,11 @@ class Base {
     const containerToReplace = this.container;
 
     // The placeholder can be gone by now, e.g. because an SPA rerendered the
-    // page before consent was given. Say so and leave `data-uc-src` alone, so
-    // the embed stays recoverable instead of being dropped without a trace.
-    if (!this.el || !containerToReplace.parentNode) {
+    // page before consent was given. There is nothing left to replace, and this
+    // instance cannot bring the embed back: it has already been unregistered and
+    // its service is marked active. Report it and leave `data-uc-src` in place,
+    // so the parked URL is at least not destroyed on the way out.
+    if (!containerToReplace.parentNode) {
       console.error('[Usercentrics Widgets] Cannot activate widget, its placeholder is no longer in the document:', this.cfg.ucId);
       return;
     }
@@ -257,7 +259,14 @@ class Base {
 
     // `tagName` keeps the source casing in XHTML documents, so normalize it.
     if (this.el.tagName.toLowerCase() === 'script') {
-      this.el.removeAttribute('type');
+      const type = this.el.getAttribute('type');
+
+      // Only the blocking placeholder type has to go. Dropping `module` too
+      // would restore the embed as a classic script, which fails on the first
+      // `import` — the default classic type needs no attribute either way.
+      if (type && type.toLowerCase() !== 'module') {
+        this.el.removeAttribute('type');
+      }
     }
 
     this.el.setAttribute('src', src);
