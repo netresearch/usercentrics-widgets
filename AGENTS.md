@@ -89,7 +89,7 @@ bun run watch           # Dev mode with rollup watch (console.* preserved)
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `ci.yml` | push to `main`, every PR | The main gate, via the shared `netresearch/.github` `node-ci.yml`: ESLint, build, npm audit at `high`, CodeQL, dependency review. Tests and gitleaks are disabled |
-| `npm-publish.yml` | `release: created` | Build and publish to npm (`--access public`). It does **not** lint or test — the shared `node-release.yml` states that is out of its scope |
+| `npm-publish.yml` | push of a `v*` tag, or manual dispatch naming a tag | Build, publish to npm (`--access public`) and create the GitHub Release. It does **not** lint or test — the shared `node-release.yml` states that is out of its scope. `version-source: manifest-verified` fails the run when the tag and `package.json` disagree |
 | `auto-merge-deps.yml` | `pull_request_target` | Auto-approve and rebase-merge Dependabot/Renovate PRs |
 
 ### Security

@@ -1,11 +1,29 @@
-# Publish @netresearch/usercentrics-widgets to npm when a GitHub Release is
-# created. Thin caller of the shared node-release reusable: build + npm
-# publish live in netresearch/.github, so the pinned action versions and the
-# publish logic are maintained centrally. Zero step-level `uses:`.
+# Publish @netresearch/usercentrics-widgets to npm when a v* tag is pushed, and
+# create the GitHub Release from it. Thin caller of the shared node-release
+# reusable: build, npm publish and release creation live in netresearch/.github,
+# so the pinned action versions and the publish logic are maintained centrally.
+# Zero step-level `uses:`.
+#
+# Triggered by the tag, not by a Release. It used to be the other way round —
+# `on: release: [created]` with `create-github-release: false` — which meant
+# nothing published until somebody created the Release by hand, and every tag in
+# this repository before v2.1.0 is lightweight for exactly that reason. It also
+# could not be fixed by creating a draft first: GitHub does not fire the
+# `created` activity type for draft releases, so a draft-then-publish flow
+# emitted `published` and never `created`, and the publish job never ran.
+#
+# This is the shape every other Node repository in the org uses
+# (node-magento-eqp, node-agent-skill-coordinator, assetpicker,
+# postdirekt-autocomplete-monorepo): push a signed tag, CI does the rest.
+#
+# `version-source: manifest-verified` makes the reusable check that
+# package.json's version matches the tag before anything is published, so a tag
+# that disagrees with the manifest fails instead of publishing the wrong
+# version. `skip-if-published: true` makes a re-run idempotent rather than
+# failing on an already-published version.
 #
 # This package authenticates with NPM_TOKEN (no Trusted Publisher configured),
-# so provenance is off and the token is forwarded explicitly. The Release
-# already exists (it is the trigger), so create-github-release stays off.
+# so provenance is off and the token is forwarded explicitly.
 #
 # Keep the filename npm-publish.yml. There is no Trusted Publisher today, so a
 # rename would not break publishing — but to move off the token later, create a
@@ -15,8 +33,19 @@
 name: Node.js Package
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      # `create-github-release: true` needs a tag. Dispatching from a branch
+      # with this empty ends the run in the reusable's input validation, so a
+      # re-run of a failed tag-push release has to name the tag here.
+      tag:
+        description: 'Existing tag to release (e.g. v2.1.0). Leave empty only when dispatching on a tag ref.'
+        type: string
+        required: false
+        default: ''
 
 permissions: {}
 
@@ -28,15 +57,19 @@ jobs:
       id-token: write
       packages: write
     with:
+      # `inputs` is null on a tag push, where the reusable resolves the tag
+      # from the ref itself; the fallback keeps that path valid.
+      tag: ${{ inputs.tag || '' }}
       package-manager: bun
       node-version: '24'
       install-cmd: bun install --frozen-lockfile
       build-cmd: bun run build
-      version-source: manifest
+      version-source: manifest-verified
       publish-npm: true
       npm-access: public
       provenance: false
       publish-github-packages: false
-      create-github-release: false
+      skip-if-published: true
+      create-github-release: true
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
