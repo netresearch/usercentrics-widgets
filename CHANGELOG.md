@@ -5,11 +5,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [2.0.5] - 2025-01-09
+## [Unreleased]
+
+### Fixed
+- Script embeds now load once consent is given. `performActivation()` cleared `this.container` and `Iframe.activate()` then dereferenced it, so the `TypeError` fired on every activation and the deferred `src` assignment was never reached. Restoring the source is now one path in `Base.restoreSource()`, run after the element is back in the document
+- `<script type="module">` embeds are restored as modules. The blocking `type` was removed unconditionally, so a module came back as a classic script and threw on its first `import`
+- `tagName` is compared case-insensitively, so script embeds are also un-blocked in XHTML documents, where `tagName` keeps its source casing
+- A detached placeholder no longer destroys the parked URL. `data-uc-src` was overwritten with the string `"null"`; it is now left intact and the case is reported via the new `ucw:activation-failed` event
+- Reading a stored consent no longer writes it back to the CMP as a fresh user decision. `checkInitialConsent()` synthesised a click on the accept button, which routed through the consent-writing path
+- v3 consent is read from `details.services[id].consent.given` only. The previous fallback to `details.consent.serviceIds` treated membership as consent, but that array lists the *denied* services when `details.consent.status` is `SOME_DENIED` — so it granted consent to services the user had refused
+- A click before the Usercentrics script has loaded no longer leaves the widget permanently inert. `setConsent()` throws in that window, and the widget state was committed before the throw
+
+### Changed
+- `getConsent()` is always `async` and resolves to a boolean, mapping any CMP failure on either API version to "no consent". The caller-side promise checks are gone
+- `dist/` is excluded from linting, so `bun run build` followed by `bun run lint` no longer reports errors in generated bundles
+
+### Added
+- `ucw:activation-failed` event on `document`, for the case where the placeholder left the DOM before consent arrived. The production build strips `console.*`, so this is the only observable signal
+- Documentation for the `ucw:activated` and `ucw:activation-failed` events, for script embeds including `type="module"`, and architecture decision records under `docs/adr/`
+
+## [2.0.8] - 2025-09-10
+
+### Fixed
+- Activation of multiple widgets on the same page
+
+## [2.0.7] - 2025-09-09
+
+### Changed
+- Version bump only
+
+## [2.0.6] - 2025-09-09
+
+### Changed
+- Corrected linter styles
+
+## [2.0.5] - 2025-09-09
 
 ### Fixed
 - Updated Base.js widget implementation
 - Improved overlay handling
+- Removed debug mode and added automatic overlay removal (WEB-1319)
 
 ## [2.0.0] - 2025-09-01
 
