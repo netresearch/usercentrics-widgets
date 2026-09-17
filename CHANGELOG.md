@@ -69,8 +69,7 @@ Tagged and released on GitHub, but never published to npm — the version bump l
 ## [2.0.1] - 2025-09-01
 
 ### Changed
-- Updated the script URL validation
-- Backfilled the changelog for 2.0.0 and earlier
+- Version bump only
 
 ## [2.0.0] - 2025-09-01
 
