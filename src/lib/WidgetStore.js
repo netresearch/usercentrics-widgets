@@ -112,6 +112,14 @@ class WidgetStore {
             if (activation && typeof activation.catch === 'function') {
               activation.catch((e) => {
                 console.error('[Usercentrics Widgets] Failed to activate widget:', e);
+
+                // `console.*` is stripped from the build, so without this a
+                // store-driven failure is invisible where the click path
+                // reports one.
+                document.dispatchEvent(new CustomEvent('ucw:activation-failed', {
+                  detail: { ucId, reason: 'store-activation-failed' },
+                  bubbles: true
+                }));
               });
             }
           } catch (e) {
