@@ -42,8 +42,7 @@ class WidgetStore {
     // Wait for CMP to be ready
     cmp.waitForCmp(async () => {
       try {
-        const consent = await cmp.getConsent(ucId);
-        const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
+        const hasConsent = await cmp.getConsent(ucId);
 
         if (hasConsent) {
           this.activate(ucId);
@@ -132,8 +131,7 @@ class WidgetStore {
       }
 
       try {
-        const consent = await cmp.getConsent(ucId);
-        const hasConsent = consent === true || (consent && typeof consent.then === 'function' && await consent);
+        const hasConsent = await cmp.getConsent(ucId);
 
         if (hasConsent) {
           this.activate(ucId);

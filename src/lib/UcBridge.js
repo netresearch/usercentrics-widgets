@@ -51,13 +51,8 @@ class UcBridge {
    * @param {function} callback - The function to execute if consent is granted.
    */
   waitForCmpConsent (ucId, callback) {
-    this.waitForCmp(() => {
-      const consent = this.getConsent(ucId);
-      if (consent && typeof consent.then === 'function') {
-        consent.then((result) => {
-          result === true && callback();
-        });
-      } else if (consent === true) {
+    this.waitForCmp(async () => {
+      if (await this.getConsent(ucId)) {
         callback();
       }
     });
@@ -126,66 +121,61 @@ class UcBridge {
   /**
    * Retrieves the current stored consent decision for a specific service from the Usercentrics CMP.
    *
+   * Always resolves: any failure of the underlying CMP call, on either API
+   * version, counts as "no consent" rather than propagating.
+   *
    * @param {string} ucId - The Usercentrics Service ID.
-   * @return {boolean|Promise<boolean>} - Returns true if consent is granted, false otherwise.
-   *                                     If using Usercentrics v3, it may return a Promise.
+   * @return {Promise<boolean>} - Resolves true if consent is granted, false otherwise.
    */
-  getConsent (ucId) {
+  async getConsent (ucId) {
     try {
       // UC v3: Retrieve consent details using the __ucCmp API.
       if (window.__ucCmp && typeof window.__ucCmp.getConsentDetails === 'function') {
-        const p = window.__ucCmp.getConsentDetails();
-        return p.then((details) => {
-          if (!details) return false;
-          // First check explicit services map/object for the service and require consent.given === true if present
-          if (details.services) {
-            const svc = Array.isArray(details.services)
-              ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
-              : details.services[ucId] || details.services[String(ucId)] || null;
-            if (svc) {
-              const given = (svc.consent && typeof svc.consent.given !== 'undefined')
-                ? !!svc.consent.given
-                : (typeof svc.consent?.status !== 'undefined')
-                    ? !!svc.consent.status
-                    : (typeof svc.status !== 'undefined')
-                        ? !!svc.status
-                        : false;
-              return given === true;
-            }
+        const details = await window.__ucCmp.getConsentDetails();
+
+        if (!details) return false;
+
+        // First check explicit services map/object for the service and require consent.given === true if present
+        if (details.services) {
+          const svc = Array.isArray(details.services)
+            ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
+            : details.services[ucId] || details.services[String(ucId)] || null;
+          if (svc) {
+            const given = (svc.consent && typeof svc.consent.given !== 'undefined')
+              ? !!svc.consent.given
+              : (typeof svc.consent?.status !== 'undefined')
+                  ? !!svc.consent.status
+                  : (typeof svc.status !== 'undefined')
+                      ? !!svc.status
+                      : false;
+            return given === true;
           }
-
-          // Then additionally require that the global consent serviceIds includes ucId
-          if (details.consent && Array.isArray(details.consent.serviceIds)) {
-            return details.consent.serviceIds.includes(ucId);
-          }
-
-          return false;
-        });
-      }
-
-      // UC v2: Retrieve consent using the legacy API.
-      if (window.UC_UI && typeof window.UC_UI.getServicesBaseInfo === 'function') {
-        const consents = window.UC_UI.getServicesBaseInfo();
-
-        const findConsent = (services) => {
-          if (!Array.isArray(services)) {
-            return false;
-          }
-          for (let i = 0; i < services.length; i++) {
-            if (services[i].id === ucId) {
-              return !!(services[i].consent && services[i].consent.status);
-            }
-          }
-          return false;
-        };
-
-        // Newer CMP builds resolve this asynchronously. Keep the same "no
-        // consent on error" contract the synchronous path has.
-        if (consents && typeof consents.then === 'function') {
-          return Promise.resolve(consents).then(findConsent).catch(() => false);
         }
 
-        return findConsent(consents);
+        // Then additionally require that the global consent serviceIds includes ucId
+        if (details.consent && Array.isArray(details.consent.serviceIds)) {
+          return details.consent.serviceIds.includes(ucId);
+        }
+
+        return false;
+      }
+
+      // UC v2: Retrieve consent using the legacy API. Newer CMP builds resolve
+      // `getServicesBaseInfo()` asynchronously, older ones return the array.
+      if (window.UC_UI && typeof window.UC_UI.getServicesBaseInfo === 'function') {
+        const services = await window.UC_UI.getServicesBaseInfo();
+
+        if (!Array.isArray(services)) {
+          return false;
+        }
+
+        for (let i = 0; i < services.length; i++) {
+          if (services[i].id === ucId) {
+            return !!(services[i].consent && services[i].consent.status);
+          }
+        }
+
+        return false;
       }
 
       // Unknown environment.
