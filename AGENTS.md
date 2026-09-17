@@ -89,7 +89,7 @@ bun run watch           # Dev mode with rollup watch (console.* preserved)
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `ci.yml` | push to `main`, every PR | The main gate, via the shared `netresearch/.github` `node-ci.yml`: ESLint, build, npm audit at `high`, CodeQL, dependency review. Tests and gitleaks are disabled |
-| `npm-publish.yml` | push of a `v*` tag, or manual dispatch naming a tag | Build, publish to npm (`--access public`) and create the GitHub Release. It does **not** lint or test — the shared `node-release.yml` states that is out of its scope. `version-source: manifest-verified` fails the run when the tag and `package.json` disagree |
+| `npm-publish.yml` | push of a `v*` tag, or manual dispatch naming a tag | Build, publish to npm (`--access public`) and create the GitHub Release. Authenticates over **OIDC Trusted Publishing** — no `NPM_TOKEN` — and publishes with provenance. It does **not** lint or test — the shared `node-release.yml` states that is out of its scope. `version-source: manifest-verified` fails the run when the tag and `package.json` disagree |
 | `auto-merge-deps.yml` | `pull_request_target` | Auto-approve and rebase-merge Dependabot/Renovate PRs |
 
 ### Security
@@ -97,6 +97,7 @@ bun run watch           # Dev mode with rollup watch (console.* preserved)
 - **CodeQL**: runs as a job inside `ci.yml` (via `netresearch/.github`), language `javascript-typescript`, query suite `security-and-quality`. GitHub's CodeQL *default setup* is `not-configured` for this repository
 - **Dependabot security updates**: Enabled (no `dependabot.yml` config file -- uses GitHub default)
 - **Secret scanning + push protection**: Enabled
+- **npm publishing**: OIDC Trusted Publishing, registered on npmjs.com against the repository and the caller filename `npm-publish.yml`. Renaming that file breaks publishing until the publisher entry is updated; the publisher must never name the reusable `node-release.yml`, since npm validates the run's entry-point workflow. The npm trusted-publisher entry cannot be edited after creation — it has to be deleted and recreated. No npm token is forwarded to the publish workflow; the unused repository secret `NPM_TOKEN` is pending deletion
 - **Workflow permissions**: `permissions: {}` at the top of `ci.yml` and `npm-publish.yml`, scoped per job. `auto-merge-deps.yml` is the exception: it sets `contents: write` and `pull-requests: write` at workflow level on a `pull_request_target` trigger
 
 ### Script URL sanitization
