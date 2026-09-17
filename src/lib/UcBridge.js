@@ -1,41 +1,20 @@
 /**
- * Locates a service entry in a v3 consent-details payload, which is either an
- * array of services or a map keyed by service ID.
- *
- * @param {Array|Object} services
- * @param {string} ucId - The Usercentrics Service ID.
- * @return {Object|null}
- */
-function findServiceEntry (services, ucId) {
-  if (Array.isArray(services)) {
-    return services.find((s) => s && (s.id === ucId || s.serviceId === ucId)) || null;
-  }
-
-  return services[ucId] || services[String(ucId)] || null;
-}
-
-/**
- * Reads the consent flag off a v3 service entry. Builds disagree on where it
- * sits, so take the first field that is present and treat a missing one as
- * "not consented" rather than as unknown.
- *
- * @param {Object} svc
- * @return {boolean}
- */
-function readServiceConsent (svc) {
-  if (svc.consent && typeof svc.consent.given !== 'undefined') {
-    return !!svc.consent.given;
-  }
-
-  if (typeof svc.consent?.status !== 'undefined') {
-    return !!svc.consent.status;
-  }
-
-  return !!svc.status;
-}
-
-/**
  * Reads consent from the UC v3 `__ucCmp` API.
+ *
+ * `details.services` is a map keyed by service ID, and the per-service flag is
+ * `consent.given`. That is the whole contract — it is what the CMP itself reads
+ * back when it restores a stored decision.
+ *
+ * Deliberately no fallback to `details.consent.serviceIds`: that array is a
+ * delta list whose meaning depends on `details.consent.status`. It is empty for
+ * `ALL_ACCEPTED` and `ALL_DENIED`, lists the CONSENTED services for
+ * `SOME_ACCEPTED`, and lists the DENIED ones for `SOME_DENIED` — the CMP picks
+ * whichever list is shorter. Reading membership as consent therefore inverts
+ * the answer in the `SOME_DENIED` case, which is the common one for a user who
+ * accepts most services and refuses a few.
+ *
+ * A service absent from `services` is not configured in this CMP setting, and
+ * "not configured" is not consent.
  *
  * @param {string} ucId - The Usercentrics Service ID.
  * @return {Promise<boolean>}
@@ -43,24 +22,7 @@ function readServiceConsent (svc) {
 async function getConsentV3 (ucId) {
   const details = await window.__ucCmp.getConsentDetails();
 
-  if (!details) {
-    return false;
-  }
-
-  if (details.services) {
-    const svc = findServiceEntry(details.services, ucId);
-
-    if (svc) {
-      return readServiceConsent(svc);
-    }
-  }
-
-  // No explicit service entry: fall back to the global consented-service list.
-  if (details.consent && Array.isArray(details.consent.serviceIds)) {
-    return details.consent.serviceIds.includes(ucId);
-  }
-
-  return false;
+  return details?.services?.[ucId]?.consent?.given === true;
 }
 
 /**
