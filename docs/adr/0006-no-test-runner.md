@@ -8,8 +8,8 @@ Accepted — recorded so it is a decision rather than an omission
 
 ## Context
 
-The repository has no test framework. `bun test` is a placeholder that exits
-with an error, and CI passes `enable-test: false`. Every gate that runs is
+The repository has no test framework. The `test` script is a placeholder that
+exits with an error, and CI passes `enable-test: false`. Every gate that runs is
 static: ESLint, the build, an npm audit, CodeQL and dependency review.
 
 This is recorded because the absence reads as neglect, and because the

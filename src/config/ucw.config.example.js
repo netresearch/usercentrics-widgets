@@ -3,7 +3,8 @@
 // The config allows full HTML for the placeholder text, including links.
 
 window.UCW_WIDGET_CONFIG = {
-  // Language-specific overrides. Supported keys: de, en (case-insensitive).
+  // Language-specific overrides. Supported keys: de or DE, en or EN.
+  // No other casing is matched — 'De' falls through to the defaults.
   // Each language block may define: textHtml, acceptLabel, acceptLabelClass, textServicePrefix, textSuffixHtml
   i18n: {
     de: {

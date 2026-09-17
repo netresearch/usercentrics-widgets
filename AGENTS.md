@@ -79,7 +79,7 @@ bun run watch           # Dev mode with rollup watch (console.* preserved)
 
 - Linter: ESLint 10 flat config (`eslint.config.mjs`), built on `@eslint/js` recommended plus three rules. `semistandard` was dropped in `4be1820`
 - `bun run build:css` exists as a separate script and is called by `bun run build`
-- No test suite currently (`bun test` exits with an error, and CI sets `enable-test: false`)
+- No test suite currently. `bun run test` (and `npm test`) is a placeholder script that exits with an error; `bun test`, Bun's own runner, finds no test files. CI sets `enable-test: false`
 - Node 24.x used in CI
 
 ## CI/CD

@@ -13,7 +13,9 @@ service was absent from `details.services`, treating membership as consent.
 
 `serviceIds` is not a list of consented services. It is a delta list whose
 meaning is set by `details.consent.status`. From the vendor's shipped source
-(`@usercentrics/cmp-web-sdk`, `DpsModel.getConsentServiceIds()`): it is empty for
+(`@usercentrics/cmp-web-sdk@1.0.0-beta.1`, `DpsModel.getConsentServiceIds()`, and
+confirmed in the live Browser UI bundle at `web.cmp.usercentrics.eu`, which is
+what a site actually loads): it is empty for
 `ALL_ACCEPTED` and `ALL_DENIED`, holds the services *with* consent for
 `SOME_ACCEPTED`, and the services *without* consent for `SOME_DENIED`. The CMP
 stores whichever of the two lists is shorter, so `SOME_DENIED` is the ordinary

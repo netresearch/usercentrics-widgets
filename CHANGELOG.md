@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `getConsent()` is always `async` and resolves to a boolean, mapping any CMP failure on either API version to "no consent". The caller-side promise checks are gone
 - `dist/` is excluded from linting, so `bun run build` followed by `bun run lint` no longer reports errors in generated bundles
 
+### Security
+- The `data-config` URL is reconstructed through the `URL` constructor before it reaches the script `src`, so the DOM sink receives a normalised string rather than the raw attribute value
+
 ### Added
 - `ucw:activation-failed` event on `document`, for the case where the placeholder left the DOM before consent arrived. The production build strips `console.*`, so this is the only observable signal
 - Documentation for the `ucw:activated` and `ucw:activation-failed` events, for script embeds including `type="module"`, and architecture decision records under `docs/adr/`
@@ -36,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.6] - 2025-09-09
 
+Tagged and released on GitHub, but never published to npm — the version bump landed after the tag, so `package.json` still read 2.0.5.
+
 ### Changed
 - Corrected linter styles
 
@@ -44,7 +49,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Updated Base.js widget implementation
 - Improved overlay handling
-- Removed debug mode and added automatic overlay removal (WEB-1319)
+- Removed debug mode and added automatic overlay removal
+
+## [2.0.4] - 2025-09-01
+
+### Fixed
+- v3 API call to save consent settings
+
+## [2.0.3] - 2025-09-01
+
+### Fixed
+- Runtime error: `this.isGerman is not a function`
+
+## [2.0.2] - 2025-09-01
+
+### Fixed
+- Undefined variable `extMatch` in the script URL validation
+
+## [2.0.1] - 2025-09-01
+
+### Changed
+- Updated the script URL validation
+- Backfilled the changelog for 2.0.0 and earlier
 
 ## [2.0.0] - 2025-09-01
 

@@ -135,7 +135,7 @@ class Base {
   }
 
   /**
-   * Returns additional CSS class for the accept control wrapper
+   * Returns additional CSS class(es) for the accept button itself
    * @return {string}
    */
   getAcceptLabelClass () {
