@@ -22,13 +22,26 @@
 # version. `skip-if-published: true` makes a re-run idempotent rather than
 # failing on an already-published version.
 #
-# This package authenticates with NPM_TOKEN (no Trusted Publisher configured),
-# so provenance is off and the token is forwarded explicitly.
+# npm authenticates over OIDC Trusted Publishing — there is no long-lived
+# token, which is why no `secrets:` block appears below.
 #
-# Keep the filename npm-publish.yml. There is no Trusted Publisher today, so a
-# rename would not break publishing — but to move off the token later, create a
-# Trusted Publisher on npmjs.com bound to THIS filename, then set
-# provenance: true and drop the NPM_TOKEN secret.
+# On precedence, since it is easy to get backwards: npm attempts the OIDC
+# exchange unconditionally and its token overrides whatever credential was
+# configured (`npm/lib/commands/publish.js` calls `oidc()` before resolving
+# credentials, and `lib/utils/oidc.js` then overwrites the `_authToken` key).
+# A forwarded `NPM_TOKEN` is therefore a FALLBACK for a failed exchange, not a
+# winner. The secret is dropped because it is expired, unnecessary and a
+# standing credential — not because it would otherwise shadow the publisher.
+#
+# DO NOT RENAME THIS FILE. npm validates the entry-point workflow of the run,
+# not the reusable that executes `npm publish`, so the Trusted Publisher on
+# npmjs.com names `npm-publish.yml`. Renaming it breaks publishing until the
+# publisher entry is updated to match. For the same reason the publisher must
+# never name `node-release.yml`.
+#
+# `provenance: true` requires a public repository and npm CLI >= 11.5.1 on
+# Node >= 22.14; `node-version: '24'` satisfies the floor with its bundled npm,
+# and the reusable enforces it before publishing.
 
 name: Node.js Package
 
@@ -67,9 +80,7 @@ jobs:
       version-source: manifest-verified
       publish-npm: true
       npm-access: public
-      provenance: false
+      provenance: true
       publish-github-packages: false
       skip-if-published: true
       create-github-release: true
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
