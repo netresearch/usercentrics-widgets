@@ -58,7 +58,7 @@ Usercentrics v3 Browser API.
       <div id="bookingKitContainer" data-cw="6dfd2c67962b9442abd2a28759a7445e"></div>
       <script type="text/plain" data-usercentrics="bookingkit" data-uc-id="Ewb9uz1Rp" data-uc-src="https://4706b1799db005bf104.widget.bookingkit.net/bkscript/XXX/" async></script>
       ```
-   3. Google Tag Manager and scripts without output can still be used as before
+   3. Google Tag Manager and scripts without output can still be used as before. This library does not process them — they carry no `data-uc-src`, so Usercentrics blocks them directly via `type="text/plain"`
       ```
       <script type="text/plain" data-usercentrics="Google Tag Manager">
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -69,21 +69,21 @@ Usercentrics v3 Browser API.
       </script>
       ```
 
-## Pipeline on github
-* The pipeline is based on [Github Actions](https://github.com/netresearch/usercentrics-widgets/actions)
-* The pipline build the `dist` folder and the JavaScript and css files
-* The pipline also runs the tests
+## Pipeline on GitHub
+* The pipeline is based on [GitHub Actions](https://github.com/netresearch/usercentrics-widgets/actions)
+* It lints the sources, builds the `dist` folder with the JavaScript and CSS files, audits the dependencies and runs CodeQL
+* There is no test suite, so the pipeline runs none. `bun test` is a placeholder that exits with an error
 
 ## Build changes locally
-1. the /dist/ folder contains the latest version of the library
+1. `dist/` is build output. It is not committed — run `bun run build` to produce it. The published npm package ships it
 2. Changes can do in the /src/ folder
 3. Install the dependencies with `bun install`
 4. Build the changes with `bun run build`
 
 ## Supported technologies
 * all iframes
-* all scripts
-* background images only for Youtube at the moment
+* all scripts, including `type="module"` (see [Script embeds](#script-embeds))
+* custom background images via `data-uc-background-image` on any widget; automatic poster images only for YouTube, via the Usercentrics privacy proxy
 
 ## Customization
 
@@ -91,17 +91,48 @@ All widgets can be changed via data attributes:
 
 | Attribute                  | Description                     | Example                                                                       |
 |----------------------------|---------------------------------|-------------------------------------------------------------------------------|
-| `data-uc-src`              | `src` of the original element   | `data-uc-src="https://www.youtube.com/embed/xxx"`                             |
+| `data-uc-src`              | The parked `src` of the blocked element. Its presence is what turns the element into a widget | `data-uc-src="https://www.youtube.com/embed/xxx"` |
+| `data-uc-id`               | Usercentrics service ID         | `data-uc-id="BJz7qNsdj-7"`                                                     |
+| `data-usercentrics`        | Usercentrics service name       | `data-usercentrics="Google Maps"`                                              |
 | `data-text`                | Text for the placeholder        | `data-text="We need your consent"`                                            |
 | `data-accept`              | Label for the accept button     | `data-accept="ok"`                                                            |
 | `data-uc-background-image` | URL for custom background-image | `data-uc-background-image="https://picsum.photos/id/12/1920/1080.jpg"` |
+
+## Script embeds
+
+A blocked `<script>` carries its URL in `data-uc-src` and a non-executing `type`, conventionally `type="text/plain"`. On consent the element is put back into the document, the blocking `type` is removed and `src` is assigned — that order is what makes the browser run the script.
+
+`type="module"` is preserved. A module embed is restored as a module:
+
+```html
+<script type="module" data-usercentrics="Some Service" data-uc-id="XXXXXXXX" data-uc-src="https://example.com/embed.mjs"></script>
+```
+
+Any other `type` is dropped on activation, which is what un-blocks a `text/plain` placeholder. If the element already has a `src` of its own it is overwritten by `data-uc-src`.
+
+## Events
+
+Both events bubble, so a listener on `document` or `window` receives them.
+
+| Event | Target | `detail` | When |
+|---|---|---|---|
+| `ucw:activated` | the restored element (the `<iframe>` or `<script>`) | `{ ucId }` | after `src` has been assigned — the embed has started loading, not finished |
+| `ucw:activation-failed` | `document` | `{ ucId, reason }` | the placeholder was no longer in the document when consent arrived, so the embed could not be restored. `reason` is currently always `placeholder-detached` |
+
+```js
+document.addEventListener('ucw:activated', (e) => {
+  console.log('embed restored for service', e.detail.ucId);
+});
+```
+
+`ucw:activation-failed` is dispatched on `document` because the element it concerns has been detached and a listener on it would never fire. It is the only signal for that case that survives the production build, which strips `console.*`.
 
 ##  Styling
 
 There is a scss template in the style folder, this is independent of the css file from the dist folder
 
 Instead of using the original predefined CSS file, you can use your own. See [/style/ucw.css](/style/ucw.css) as a reference
-which CSS classes need to be defined and [/example/customized.html](/example/customized.html) as an example.
+for which CSS classes need to be defined.
 
 
 
@@ -128,10 +159,10 @@ Example:
 
 Structure of the configuration (`window.UCW_WIDGET_CONFIG`):
 
-- i18n (language-specific; keys de/en, case-insensitive)
+- i18n (language-specific; keys `de` or `DE`, `en` or `EN` — no other casing is recognised)
   - textHtml: Complete HTML for the placeholder (overrides prefix/suffix variant)
   - acceptLabel: Text of the accept button
-  - acceptLabelClass: Additional CSS class(es) for the control element wrapping the button (added alongside `uc-widget-control`)
+  - acceptLabelClass: Additional CSS class(es) added to the accept **button** itself, alongside `uc-widget-accept` and `uc-widget-control`
   - textServicePrefix: Text before the service name, if `textHtml` is not used
   - textSuffixHtml: HTML after the service name, if `textHtml` is not used
 - Root level (optional, fallback for all languages):
@@ -139,6 +170,5 @@ Structure of the configuration (`window.UCW_WIDGET_CONFIG`):
 
 Notes:
 - Language is detected via the `lang` attribute on the `<html>` element. For German, `de-DE`, `de` or `DE` are supported; otherwise English is used.
-- A complete example can be found here:
-  - `src/static/assets/js/usercentrics-widgets/src/config/ucw.config.example.js`
-  - A project example is here: `src/static/assets/js/usercentrics-widgets.config.js`
+- A complete example is [`src/config/ucw.config.example.js`](/src/config/ucw.config.example.js) in this repository. The build copies it to `dist/ucw.config.js`.
+- The `data-config` URL is validated before it is loaded: it must be same-origin and end in `.js` or `.mjs`. Anything else — a CDN URL, a `data:` URI — is rejected and no config is loaded. A load error is ignored silently, and the widgets fall back to their defaults.

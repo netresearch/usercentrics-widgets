@@ -52,13 +52,13 @@ class Base {
      */
     this.cfg = {
       /**
-       * Usercentrics Service ID defined via data-data-uc-id on the widget
+       * Usercentrics Service ID defined via data-uc-id on the widget
        * @type {string}
        */
       ucId: this.el.getAttribute('data-uc-id'),
 
       /**
-       * Usercentrics Service Name defined via data-uc-id on the widget
+       * Usercentrics Service Name defined via data-usercentrics on the widget
        * @type {string}
        */
       ucName: this.el.getAttribute('data-usercentrics'),
