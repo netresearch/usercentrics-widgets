@@ -230,7 +230,8 @@ class Base {
       console.error('[Usercentrics Widgets] Cannot activate widget, its placeholder is no longer in the document:', this.cfg.ucId);
 
       document.dispatchEvent(new CustomEvent('ucw:activation-failed', {
-        detail: { ucId: this.cfg.ucId, reason: 'placeholder-detached' }
+        detail: { ucId: this.cfg.ucId, reason: 'placeholder-detached' },
+        bubbles: true
       }));
 
       return;

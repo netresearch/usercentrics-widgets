@@ -1,4 +1,92 @@
 /**
+ * Locates a service entry in a v3 consent-details payload, which is either an
+ * array of services or a map keyed by service ID.
+ *
+ * @param {Array|Object} services
+ * @param {string} ucId - The Usercentrics Service ID.
+ * @return {Object|null}
+ */
+function findServiceEntry (services, ucId) {
+  if (Array.isArray(services)) {
+    return services.find((s) => s && (s.id === ucId || s.serviceId === ucId)) || null;
+  }
+
+  return services[ucId] || services[String(ucId)] || null;
+}
+
+/**
+ * Reads the consent flag off a v3 service entry. Builds disagree on where it
+ * sits, so take the first field that is present and treat a missing one as
+ * "not consented" rather than as unknown.
+ *
+ * @param {Object} svc
+ * @return {boolean}
+ */
+function readServiceConsent (svc) {
+  if (svc.consent && typeof svc.consent.given !== 'undefined') {
+    return !!svc.consent.given;
+  }
+
+  if (typeof svc.consent?.status !== 'undefined') {
+    return !!svc.consent.status;
+  }
+
+  return !!svc.status;
+}
+
+/**
+ * Reads consent from the UC v3 `__ucCmp` API.
+ *
+ * @param {string} ucId - The Usercentrics Service ID.
+ * @return {Promise<boolean>}
+ */
+async function getConsentV3 (ucId) {
+  const details = await window.__ucCmp.getConsentDetails();
+
+  if (!details) {
+    return false;
+  }
+
+  if (details.services) {
+    const svc = findServiceEntry(details.services, ucId);
+
+    if (svc) {
+      return readServiceConsent(svc);
+    }
+  }
+
+  // No explicit service entry: fall back to the global consented-service list.
+  if (details.consent && Array.isArray(details.consent.serviceIds)) {
+    return details.consent.serviceIds.includes(ucId);
+  }
+
+  return false;
+}
+
+/**
+ * Reads consent from the legacy UC v2 `UC_UI` API. Newer CMP builds resolve
+ * `getServicesBaseInfo()` asynchronously, older ones return the array.
+ *
+ * @param {string} ucId - The Usercentrics Service ID.
+ * @return {Promise<boolean>}
+ */
+async function getConsentV2 (ucId) {
+  const services = await window.UC_UI.getServicesBaseInfo();
+
+  if (!Array.isArray(services)) {
+    return false;
+  }
+
+  for (const service of services) {
+    if (service.id === ucId) {
+      return !!service.consent?.status;
+    }
+  }
+
+  return false;
+}
+
+/**
  * UcBridge class provides an interface to interact with the Usercentrics Consent Management Platform (CMP).
  * It supports both Usercentrics v2 and v3 APIs and provides methods to wait for the CMP to be ready,
  * retrieve consent, and set consent for specific services.
@@ -129,53 +217,12 @@ class UcBridge {
    */
   async getConsent (ucId) {
     try {
-      // UC v3: Retrieve consent details using the __ucCmp API.
       if (window.__ucCmp && typeof window.__ucCmp.getConsentDetails === 'function') {
-        const details = await window.__ucCmp.getConsentDetails();
-
-        if (!details) return false;
-
-        // First check explicit services map/object for the service and require consent.given === true if present
-        if (details.services) {
-          const svc = Array.isArray(details.services)
-            ? details.services.find((s) => s && (s.id === ucId || s.serviceId === ucId))
-            : details.services[ucId] || details.services[String(ucId)] || null;
-          if (svc) {
-            const given = (svc.consent && typeof svc.consent.given !== 'undefined')
-              ? !!svc.consent.given
-              : (typeof svc.consent?.status !== 'undefined')
-                  ? !!svc.consent.status
-                  : (typeof svc.status !== 'undefined')
-                      ? !!svc.status
-                      : false;
-            return given === true;
-          }
-        }
-
-        // Then additionally require that the global consent serviceIds includes ucId
-        if (details.consent && Array.isArray(details.consent.serviceIds)) {
-          return details.consent.serviceIds.includes(ucId);
-        }
-
-        return false;
+        return await getConsentV3(ucId);
       }
 
-      // UC v2: Retrieve consent using the legacy API. Newer CMP builds resolve
-      // `getServicesBaseInfo()` asynchronously, older ones return the array.
       if (window.UC_UI && typeof window.UC_UI.getServicesBaseInfo === 'function') {
-        const services = await window.UC_UI.getServicesBaseInfo();
-
-        if (!Array.isArray(services)) {
-          return false;
-        }
-
-        for (let i = 0; i < services.length; i++) {
-          if (services[i].id === ucId) {
-            return !!(services[i].consent && services[i].consent.status);
-          }
-        }
-
-        return false;
+        return await getConsentV2(ucId);
       }
 
       // Unknown environment.
