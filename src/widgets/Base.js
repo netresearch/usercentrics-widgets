@@ -75,6 +75,14 @@ class Base {
     this.isActivated = false;
 
     /**
+     * Set while the CMP write for a click is in flight. `isActivated` is only
+     * set after that write resolves, so without this a second click inside the
+     * window would pass the guard and record the consent twice.
+     * @type {boolean}
+     */
+    this.isRecordingConsent = false;
+
+    /**
      * Widget configuration
      * @type {{}}
      */
@@ -218,9 +226,9 @@ class Base {
    *
    * @param {boolean} fromWidget Indicates if the activation happened from the current Widget
    */
-  activate (fromWidget) {
+  async activate (fromWidget) {
     // Prevent double activation
-    if (this.isActivated) {
+    if (this.isActivated || this.isRecordingConsent) {
       return;
     }
 
@@ -243,8 +251,21 @@ class Base {
     // the service is no longer latched in `WidgetStore.activatedServices`, so a
     // later genuine consent event can still activate it.
     if (fromWidget) {
-      const cmp = new UcBridge();
-      cmp.setConsent(ucId);
+      // Wait for the CMP to store the decision. If it fails, nothing is
+      // committed and the embed does not load — a consent gate must not show
+      // the content on the strength of a write that did not happen.
+      this.isRecordingConsent = true;
+
+      try {
+        await new UcBridge().setConsent(ucId);
+      } finally {
+        this.isRecordingConsent = false;
+      }
+
+      // A store-driven activation can have landed while that was in flight.
+      if (this.isActivated) {
+        return;
+      }
     }
 
     this.isActivated = true;
@@ -345,7 +366,7 @@ class Base {
           // Activate directly. Synthesising a click on the accept button would
           // route through `activate(true)` and write the consent we just read
           // back to the CMP as a fresh user decision.
-          this.activate(false);
+          await this.activate(false);
         }
       } catch (error) {
         // Silently ignore errors
@@ -374,7 +395,18 @@ class Base {
     container
       .getElementsByClassName('uc-widget-accept')[0]
       .addEventListener('click', () => {
-        this.activate(true);
+        // `activate(true)` waits for the CMP to store the decision and rejects
+        // if it does not. Report that instead of leaving an unhandled
+        // rejection: the build strips `console.*`, so the event is the only
+        // signal a production page can observe.
+        this.activate(true).catch((error) => {
+          console.error('[Usercentrics Widgets] Could not record consent, the embed was not activated:', this.cfg.ucId, error);
+
+          document.dispatchEvent(new CustomEvent('ucw:activation-failed', {
+            detail: { ucId: this.cfg.ucId, reason: 'consent-not-recorded' },
+            bubbles: true
+          }));
+        });
       });
 
     this.container = container;

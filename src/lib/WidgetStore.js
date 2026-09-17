@@ -104,7 +104,16 @@ class WidgetStore {
       for (let i = 0; i < widgetsCopy.length; i++) {
         if (widgetsCopy[i]) {
           try {
-            widgetsCopy[i].activate(false);
+            // `activate()` is async, so a failure arrives as a rejection and
+            // this try/catch would not see it. Both paths are handled, and
+            // neither stops the remaining widgets.
+            const activation = widgetsCopy[i].activate(false);
+
+            if (activation && typeof activation.catch === 'function') {
+              activation.catch((e) => {
+                console.error('[Usercentrics Widgets] Failed to activate widget:', e);
+              });
+            }
           } catch (e) {
             // Log error but continue to activate other widgets
             console.error('[Usercentrics Widgets] Failed to activate widget:', e);

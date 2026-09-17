@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `dist/` is excluded from linting, so `bun run build` followed by `bun run lint` no longer reports errors in generated bundles
 
 ### Fixed
+- Accepting an embed now waits for the CMP to store the decision. `setConsent()` started `updateServicesConsents()` without awaiting it and swallowed the rejection, so the embed loaded while the write was still in flight or had already failed — invisibly, because the build strips `console.*`. A failed write now stops the activation and reports `ucw:activation-failed` with `reason: 'consent-not-recorded'`
+- A CMP that exposes no `updateServicesConsents` is refused instead of falling back to `saveConsents()` alone, which persisted the current state as an explicit user decision that did **not** include the service just accepted
+- An embed configured with a subservice id resolves again. The consent lookup only searched the top-level `services` map, so such an embed stayed a placeholder whatever the visitor consented to; it now falls back to each entry's `subservices`, which is what the CMP's own service lookup does
 - Script embeds now load once consent is given. `performActivation()` cleared `this.container` and `Iframe.activate()` then dereferenced it, so the `TypeError` fired on every activation and the deferred `src` assignment was never reached. Restoring the source is now one path in `Base.restoreSource()`, run after the element is back in the document
 - `<script type="module">` embeds are restored as modules. The blocking `type` was removed unconditionally, so a module came back as a classic script and threw on its first `import`
 - `tagName` is compared case-insensitively throughout activation, so embeds behave the same in XHTML documents, where `tagName` keeps its source casing. Previously the iframe branch was gated on `tagName === 'IFRAME'` and did not match there
@@ -30,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A click before the Usercentrics script has loaded no longer leaves the widget permanently inert. `setConsent()` throws in that window, and the widget state was committed before the throw
 
 ### Security
+- The `data-usercentrics`, `data-text`, `data-accept` and `data-uc-background-image` attributes are escaped before they reach the placeholder markup. They were interpolated into an `innerHTML` assignment unescaped, so an author able to set only a `data-` attribute on an embed — editorial or user-supplied content in a CMS, which is the deployment this library is for — could execute script in the page origin, before any consent interaction. Values documented as HTML (`textHtml`, `textServicePrefix`, `textSuffixHtml`) come from the site's own config file and still go in raw. A site that put markup in `data-text` will now see it as text
 - The `data-config` URL is reconstructed through the `URL` constructor before it reaches the script `src`, so the DOM sink receives a normalised string rather than the raw attribute value. The same-origin and `.js`/`.mjs` checks are unchanged
 
 ## [2.0.8] - 2025-09-10

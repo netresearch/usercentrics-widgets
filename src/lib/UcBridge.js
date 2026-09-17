@@ -22,7 +22,41 @@
 async function getConsentV3 (ucId) {
   const details = await window.__ucCmp.getConsentDetails();
 
-  return details?.services?.[ucId]?.consent?.given === true;
+  return findServiceEntry(details?.services, ucId)?.consent?.given === true;
+}
+
+/**
+ * Looks a service up in a v3 `services` map, falling back to the subservices of
+ * each entry — which is what the CMP's own `getService()` does. Without the
+ * fallback an embed configured with a subservice id resolves to nothing and
+ * stays a placeholder whatever the visitor consented to.
+ *
+ * `hasOwnProperty` rather than a plain index, so a service id that collides
+ * with an `Object.prototype` member (`constructor`, `toString`) cannot return
+ * an inherited value.
+ *
+ * @param {Object|undefined} services
+ * @param {string} ucId - The Usercentrics Service ID.
+ * @return {Object|undefined}
+ */
+function findServiceEntry (services, ucId) {
+  if (!services || typeof services !== 'object') {
+    return undefined;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(services, ucId)) {
+    return services[ucId];
+  }
+
+  for (const key of Object.keys(services)) {
+    const subservices = services[key] && services[key].subservices;
+
+    if (subservices && Object.prototype.hasOwnProperty.call(subservices, ucId)) {
+      return subservices[ucId];
+    }
+  }
+
+  return undefined;
 }
 
 /**
@@ -127,45 +161,53 @@ class UcBridge {
   }
 
   /**
-   * Signals the Usercentrics CMP that consent has been given for a specific service.
+   * Records consent for a service with the Usercentrics CMP, and resolves only
+   * once the CMP has persisted it.
+   *
+   * It used to start `updateServicesConsents()` and return, neither awaiting
+   * the promise nor returning it, with a `.catch` that swallowed the rejection
+   * — and the build strips `console.*`, so a failed write left no trace at all
+   * while the embed went on to load. The caller now awaits this, so a failure
+   * stops the activation instead of producing an embed with no recorded
+   * consent.
    *
    * @param {string} ucId - The Usercentrics Service ID.
-   * @throws {Error} - Throws an error if the CMP is not ready or if the consent method is missing.
+   * @return {Promise<void>} - Resolves when the CMP has stored the consent.
+   * @throws {Error} - If the CMP is not ready, exposes no way to record a
+   *                   single service's consent, or fails to store it.
    */
-  setConsent (ucId) {
+  async setConsent (ucId) {
     if (!this.isCmpReady()) {
       throw new Error('Usercentrics CMP is not ready!');
     }
 
     // Prefer UC v3 (__ucCmp) API if available
     if (window.__ucCmp) {
-      try {
-        // New recommended approach: batch update services consents and then save
-        if (typeof window.__ucCmp.updateServicesConsents === 'function') {
-          window.__ucCmp.updateServicesConsents([{ id: ucId, consent: true }])
-            .then(() => {
-              if (typeof window.__ucCmp.saveConsents === 'function') {
-                window.__ucCmp.saveConsents();
-              }
-            }).catch((e) => {
-              console.error('Error while setting consent via __ucCmp promise chain:', e);
-            });
-          return;
-        } else {
-          if (typeof window.__ucCmp.saveConsents === 'function') {
-            window.__ucCmp.saveConsents();
-          }
-          return;
-        }
-      } catch (e) {
-        console.error('Error while setting consent via __ucCmp:', e);
+      // `saveConsents()` on its own persists the CURRENT state as an explicit
+      // user decision — one that does not include the service just accepted.
+      // Refusing is the only safe option: the embed must not load on the back
+      // of a decision that excludes it.
+      if (typeof window.__ucCmp.updateServicesConsents !== 'function') {
+        throw new Error('Usercentrics CMP cannot record consent for a single service: __ucCmp.updateServicesConsents is missing');
       }
+
+      await window.__ucCmp.updateServicesConsents([{ id: ucId, consent: true }]);
+
+      if (typeof window.__ucCmp.saveConsents === 'function') {
+        await window.__ucCmp.saveConsents();
+      }
+
+      return;
     }
 
     // Legacy v2 fallback
     if (window.UC_UI && typeof window.UC_UI.acceptService === 'function') {
-      window.UC_UI.acceptService(ucId);
+      await window.UC_UI.acceptService(ucId);
+
+      return;
     }
+
+    throw new Error('Usercentrics CMP exposes no way to record consent');
   }
 
   /**
