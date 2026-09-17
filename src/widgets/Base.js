@@ -272,19 +272,7 @@ class Base {
     // Wait for CMP to be ready
     cmp.waitForCmp(async () => {
       try {
-        const consent = await cmp.getConsent(this.cfg.ucId);
-        let hasConsent = false;
-        if (consent === true) {
-          hasConsent = true;
-        } else if (consent && typeof consent.then === 'function') {
-          try {
-            hasConsent = await consent;
-          } catch (e) {
-            hasConsent = false;
-          }
-        } else if (consent) {
-          hasConsent = Boolean(consent);
-        }
+        const hasConsent = await cmp.getConsent(this.cfg.ucId);
 
         if (hasConsent && this.container && !this.isActivated) {
           // Trigger click on accept button to activate properly
