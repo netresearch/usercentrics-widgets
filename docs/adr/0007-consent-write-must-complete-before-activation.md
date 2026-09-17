@@ -17,8 +17,9 @@ in production at all.
 
 The same method had a second branch: when `__ucCmp` existed without
 `updateServicesConsents`, it called `saveConsents()` on its own. Per the
-vendor's shipped source that persists the current in-memory state as an
-explicit user decision — one that does not include the service just accepted —
+vendor's shipped source — `@usercentrics/cmp-web-sdk@1.0.0-beta.1`,
+`package/browser.js`, the same artefact ADR 3 cites — that persists the current
+in-memory state as an explicit user decision — one that does not include the service just accepted —
 and the embed then loaded anyway.
 
 ## Decision
@@ -48,8 +49,10 @@ the write and a second click inside that window would record consent twice; a
 mode that replaces the silent one; and a `.catch` in `WidgetStore.activate()`,
 whose per-widget `try/catch` cannot see a rejection.
 
-**Accepted cost.** Two widgets for one service, clicked inside the same write
-window, can leave the second one inert: the first widget's completed write runs
+**Accepted cost.** A widget can be left inert when a second activation for the
+same service resolves while its own write is still in flight — two widgets
+clicked inside the same window, or one click racing a store-driven activation
+from the CMP dialog. Taking the two-widget case: the first widget's completed write runs
 `WidgetStore.activate()`, whose loop skips the second at the re-entrancy guard,
 and the store then latches the service anyway. If the second widget's own write
 then fails, no store-driven path reaches it again and only another click will.
