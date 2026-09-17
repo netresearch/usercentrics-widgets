@@ -5,27 +5,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [Unreleased]
+## [2.1.0] - 2026-09-17
+
+### Added
+- `ucw:activation-failed` event on `document`, bubbling, `detail: { ucId, reason }`, for the case where the placeholder left the DOM before consent arrived. The production build strips `console.*`, so this is the only observable signal for it
+- Documentation for the `ucw:activated` and `ucw:activation-failed` events, for script embeds including `type="module"`, and architecture decision records under `docs/adr/`. `SECURITY.md` and `CONTRIBUTING.md` are new
+
+### Changed
+- **Upgrade note.** v3 consent is now read only from `details.services[id].consent.given`. A service that has since been removed from the CMP settings is no longer resolved from a visitor's stored decision, so an embed that loads today can show its placeholder instead. This is deliberate — a service with no current CMP configuration has no live consent surface to read, and failing closed is the default a consent gate should have. See [ADR 0003](docs/adr/0003-no-serviceids-fallback.md)
+- Restoring the source is no longer limited to `<iframe>`. Any element carrying `data-uc-src` gets its `src` assigned on activation, so `<script>`, `<img>` and `<embed>` embeds are restored with their source instead of coming back blank. Elements that load from some other attribute — `<object>`, which uses `data` — are still not restored
+- `@rollup/plugin-terser` is no longer declared as a runtime dependency. It is a build plugin and was never needed at runtime; the package now has no `dependencies` at all, which shrinks a consumer's install tree
+- `getConsent()` is always `async` and resolves to a boolean, mapping any CMP failure on either API version to "no consent". The caller-side promise checks are gone
+- The shipped `dist/ucw.config.js` no longer claims the i18n language keys are case-insensitive. Only `de`/`DE` and `en`/`EN` are matched; `De` silently falls through to the defaults. The lookup itself is unchanged — this corrects a comment that has been wrong since the keys were introduced
+- `dist/` is excluded from linting, so `bun run build` followed by `bun run lint` no longer reports errors in generated bundles
 
 ### Fixed
 - Script embeds now load once consent is given. `performActivation()` cleared `this.container` and `Iframe.activate()` then dereferenced it, so the `TypeError` fired on every activation and the deferred `src` assignment was never reached. Restoring the source is now one path in `Base.restoreSource()`, run after the element is back in the document
 - `<script type="module">` embeds are restored as modules. The blocking `type` was removed unconditionally, so a module came back as a classic script and threw on its first `import`
-- `tagName` is compared case-insensitively, so script embeds are also un-blocked in XHTML documents, where `tagName` keeps its source casing
-- A detached placeholder no longer destroys the parked URL. `data-uc-src` was overwritten with the string `"null"`; it is now left intact and the case is reported via the new `ucw:activation-failed` event
+- `tagName` is compared case-insensitively throughout activation, so embeds behave the same in XHTML documents, where `tagName` keeps its source casing. Previously the iframe branch was gated on `tagName === 'IFRAME'` and did not match there
+- `data-uc-src` is removed on activation instead of being overwritten with the string `"null"`, which had left every activated element still matching the `[data-uc-src]` selector
+- A detached placeholder no longer destroys the parked URL. `data-uc-src` is left intact and the case is reported via the new `ucw:activation-failed` event
 - Reading a stored consent no longer writes it back to the CMP as a fresh user decision. `checkInitialConsent()` synthesised a click on the accept button, which routed through the consent-writing path
-- v3 consent is read from `details.services[id].consent.given` only. The previous fallback to `details.consent.serviceIds` treated membership as consent, but that array lists the *denied* services when `details.consent.status` is `SOME_DENIED` — so it granted consent to services the user had refused
+- The v3 consent read no longer inverts. The previous fallback to `details.consent.serviceIds` treated membership as consent, but that array lists the *denied* services when `details.consent.status` is `SOME_DENIED` — the ordinary state for a visitor who accepts most services and refuses a few — so it granted consent to services the visitor had refused
 - A click before the Usercentrics script has loaded no longer leaves the widget permanently inert. `setConsent()` throws in that window, and the widget state was committed before the throw
 
-### Changed
-- `getConsent()` is always `async` and resolves to a boolean, mapping any CMP failure on either API version to "no consent". The caller-side promise checks are gone
-- `dist/` is excluded from linting, so `bun run build` followed by `bun run lint` no longer reports errors in generated bundles
-
 ### Security
-- The `data-config` URL is reconstructed through the `URL` constructor before it reaches the script `src`, so the DOM sink receives a normalised string rather than the raw attribute value
-
-### Added
-- `ucw:activation-failed` event on `document`, for the case where the placeholder left the DOM before consent arrived. The production build strips `console.*`, so this is the only observable signal
-- Documentation for the `ucw:activated` and `ucw:activation-failed` events, for script embeds including `type="module"`, and architecture decision records under `docs/adr/`
+- The `data-config` URL is reconstructed through the `URL` constructor before it reaches the script `src`, so the DOM sink receives a normalised string rather than the raw attribute value. The same-origin and `.js`/`.mjs` checks are unchanged
 
 ## [2.0.8] - 2025-09-10
 
