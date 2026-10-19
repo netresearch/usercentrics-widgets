@@ -2,7 +2,25 @@ import babel from '@rollup/plugin-babel';
 import strip from '@rollup/plugin-strip';
 import polyfill from 'rollup-plugin-polyfill';
 import terser from '@rollup/plugin-terser';
-import copy from 'rollup-plugin-copy';
+import { copyFile, mkdir } from 'node:fs/promises';
+
+// Copies the example config into dist/ once, after the first bundle is
+// written; this replaces rollup-plugin-copy with the same mapping.
+const copyConfigExample = () => {
+  let copied = false;
+
+  return {
+    name: 'copy-config-example',
+    async writeBundle () {
+      if (copied) {
+        return;
+      }
+      await mkdir('dist', { recursive: true });
+      await copyFile('src/config/ucw.config.example.js', 'dist/ucw.config.js');
+      copied = true;
+    }
+  };
+};
 
 export default commandLineArgs => [
   // modern browsers
@@ -30,17 +48,7 @@ export default commandLineArgs => [
         ]
       }),
       terser(),
-      copy({
-        targets: [
-          {
-            src: 'src/config/ucw.config.example.js',
-            dest: 'dist',
-            rename: 'ucw.config.js'
-          }
-        ],
-        hook: 'writeBundle',
-        copyOnce: true
-      })
+      copyConfigExample()
     ]
   },
   // old browsers

@@ -9,7 +9,7 @@
   "private": false,
   "scripts": {
     "watch": "./node_modules/.bin/rollup -c rollup.config.js --configDebug -w",
-    "build:css": "./node_modules/.bin/cleancss -o ./dist/ucw.min.css ./style/ucw.css",
+    "build:css": "node scripts/build-css.mjs",
     "build": "bun run build:css && ./node_modules/.bin/rollup -c rollup.config.js --bundleConfigAsCjs",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
@@ -39,10 +39,8 @@
     "@rollup/plugin-strip": "^3.0.4",
     "@rollup/plugin-terser": "^1.0.0",
     "clean-css": "^5.3.3",
-    "clean-css-cli": "^5.6.3",
     "eslint": "^10.10.0",
     "rollup": "^4.63.3",
-    "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-polyfill": "^4.2.0"
   },
   "bugs": {
