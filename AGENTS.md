@@ -91,6 +91,7 @@ bun run watch           # Dev mode with rollup watch (console.* preserved)
 | `ci.yml` | push to `main`, every PR | The main gate, via the shared `netresearch/.github` `node-ci.yml`: ESLint, build, npm audit at `high`, CodeQL, dependency review. Tests and gitleaks are disabled |
 | `npm-publish.yml` | push of a `v*` tag, or manual dispatch naming a tag | Build, publish to npm (`--access public`) and create the GitHub Release. Authenticates over **OIDC Trusted Publishing** — no `NPM_TOKEN` — and publishes with provenance. It does **not** lint or test — the shared `node-release.yml` states that is out of its scope. `version-source: manifest-verified` fails the run when the tag and `package.json` disagree |
 | `auto-merge-deps.yml` | `pull_request_target` | Auto-approve and rebase-merge Dependabot/Renovate PRs |
+| `dependency-submission.yml` | push to `main`, manual dispatch | Submits the packages in `bun.lock` to the dependency graph via the shared `netresearch/.github` `bun-dependency-submission.yml`; GitHub does not parse `bun.lock`, so without it Dependabot alerts see only the `package.json` ranges |
 
 ### Security
 
